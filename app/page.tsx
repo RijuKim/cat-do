@@ -1,103 +1,254 @@
-import Image from "next/image";
+'use client';
 
-export default function Home() {
+import {useState, useEffect} from 'react';
+import Calendar from 'react-calendar';
+import 'react-calendar/dist/Calendar.css';
+import Image from 'next/image';
+
+import dodoImg from '../public/assets/dodo.png';
+import cocoImg from '../public/assets/coco.png';
+import kkamnyangImg from '../public/assets/kkamnyang.png';
+
+import useTodos from './hooks/useTodos';
+import CatSelectorModal from './component/CatSelectorModal';
+
+export default function Page() {
+  const [date, setDate] = useState(new Date());
+  const [selectedCat, setSelectedCat] = useState('두두');
+  const [showCatModal, setShowCatModal] = useState(false);
+
+  const cats = [
+    {name: '두두', personality: '새침한 츤데레', img: dodoImg},
+    {name: '코코', personality: '다정한 개냥이', img: cocoImg},
+    {name: '깜냥', personality: '불친절한 고양이', img: kkamnyangImg},
+  ];
+
+  const {
+    mounted,
+    todosByDate,
+    input,
+    setInput,
+    message,
+    editIndex,
+    editText,
+    setEditText,
+    selectedKey,
+    addTodo,
+    toggleComplete,
+    deleteTodo,
+    getAdvice,
+    startEdit,
+    saveEdit,
+  } = useTodos(date, selectedCat); // 🐾 선택한 고양이를 훅에 전달하려면 훅에서도 사용하도록 수정해 주세요.
+
+  useEffect(() => {
+    const todayKey = new Date().toLocaleDateString('sv-SE');
+    if (!todosByDate[selectedKey] && todosByDate[todayKey]) {
+      setDate(new Date());
+    }
+  }, [todosByDate]);
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <main className="p-8">
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold">🐾 캣두</h1>
+        <button
+          className="bg-yellow-400 px-4 py-2 rounded-full shadow"
+          onClick={() => setShowCatModal(true)}>
+          나의 냥이 선택
+        </button>
+      </div>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+      {/* ✅ 모달 */}
+      {showCatModal && (
+        <CatSelectorModal
+          cats={cats}
+          selectedCat={selectedCat}
+          onSelectCat={setSelectedCat}
+          onClose={() => setShowCatModal(false)}
+        />
+      )}
+
+      {/* ✅ 오른쪽 상단 고양이 선택 메뉴 */}
+      {/* <div className="fixed top-4 right-4 flex gap-4 p-2 bg-white rounded-full shadow border">
+        {cats.map(cat => (
+          <button
+            key={cat.name}
+            onClick={() => setSelectedCat(cat.name)}
+            className={`flex flex-col items-center ${
+              selectedCat === cat.name ? 'ring-2 ring-yellow-400' : ''
+            }`}>
+            <div className="w-12 h-12 rounded-full overflow-hidden">
+              <Image src={cat.img} alt={cat.name} width={48} height={48} />
+            </div>
+            <span className="text-xs mt-1">{cat.name}</span>
+            <span className="text-[10px] text-gray-500">{cat.personality}</span>
+          </button>
+        ))}
+      </div> */}
+
+      <div className="flex flex-col md:flex-row gap-8 mt-8">
+        <div className="md:w-1/3 border rounded p-4">
+          <h2 className="text-lg mb-4">📅 날짜 선택</h2>
+
+          {mounted && (
+            <Calendar
+              onChange={setDate}
+              value={date}
+              formatDay={(locale, date) => date.getDate()}
+              tileContent={({date}) => {
+                const key = date.toLocaleDateString('sv-SE');
+                const count = todosByDate[key]?.length || 0;
+                return count > 0 ? (
+                  <div
+                    style={{
+                      background: '#facc15',
+                      borderRadius: '50%',
+                      width: 20,
+                      height: 20,
+                      textAlign: 'center',
+                      fontSize: '0.75rem',
+                      margin: 'auto',
+                      marginTop: 2,
+                    }}>
+                    {count}
+                  </div>
+                ) : null;
+              }}
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+          )}
+
+          <p className="mt-4">선택된 날짜: {selectedKey}</p>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+
+        <div className="md:w-2/3 border rounded p-4">
+          <h2 className="text-lg mb-4 flex items-center gap-2">
+            <Image
+              src={cats.find(c => c.name === selectedCat)?.img}
+              alt="고양이 비서"
+              width={24}
+              height={24}
+              style={{borderRadius: '50%'}}
+            />
+            {selectedCat} 집사의 할 일
+          </h2>
+
+          <div className="mb-4">
+            <input
+              className="border p-2 mr-2"
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              placeholder="할 일을 입력하세요"
+            />
+            <button
+              className="bg-blue-500 text-white px-4 py-2 rounded"
+              onClick={addTodo}>
+              추가
+            </button>
+          </div>
+
+          <ul className="mb-4">
+            {message && (
+              <div className="p-4 border rounded mb-4 flex items-center gap-2 bg-yellow-50">
+                <Image
+                  src={cats.find(c => c.name === selectedCat)?.img}
+                  alt="고양이 비서"
+                  width={24}
+                  height={24}
+                  style={{borderRadius: '50%'}}
+                />
+                <span className="whitespace-pre-line">
+                  {message.replace(/^🐱 /, '')}
+                </span>
+              </div>
+            )}
+
+            {(todosByDate[selectedKey] || []).map((todo, index) => (
+              <li key={todo.id} className="mb-4">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={todo.completed}
+                    onChange={() => toggleComplete(todo)}
+                  />
+
+                  {editIndex === index ? (
+                    <>
+                      <input
+                        className="border p-1"
+                        value={editText}
+                        onChange={e => setEditText(e.target.value)}
+                        onKeyDown={e => {
+                          if (e.key === 'Enter') saveEdit();
+                        }}
+                      />
+                      <button
+                        className="bg-blue-500 text-white px-2 py-1 rounded"
+                        onClick={saveEdit}>
+                        저장
+                      </button>
+                    </>
+                  ) : (
+                    <span
+                      className={
+                        todo.completed ? 'line-through text-gray-500' : ''
+                      }>
+                      {todo.text}
+                    </span>
+                  )}
+
+                  <button
+                    className="bg-green-500 text-white px-2 py-1 rounded flex items-center gap-1"
+                    onClick={() => getAdvice(todo, selectedCat)}>
+                    <Image
+                      src={cats.find(c => c.name === selectedCat)?.img}
+                      alt="도움말"
+                      width={16}
+                      height={16}
+                      style={{borderRadius: '50%'}}
+                    />
+                    {selectedCat}
+                  </button>
+                  <button
+                    className="bg-yellow-500 text-white px-2 py-1 rounded"
+                    onClick={() => startEdit(index)}>
+                    수정
+                  </button>
+                  <button
+                    className="bg-gray-400 text-white px-2 py-1 rounded"
+                    onClick={() => deleteTodo(todo)}>
+                    삭제
+                  </button>
+
+                  {todo.celebration && (
+                    <div className="relative ml-4">
+                      <div className="relative bg-yellow-200 text-sm px-3 py-2 rounded shadow">
+                        <span>{todo.celebration.replace(/^🐱 /, '')}</span>
+                        <div className="absolute -left-2 top-1/2 -translate-y-1/2 w-0 h-0 border-y-8 border-y-transparent border-r-8 border-r-yellow-200"></div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {todo.advice && (
+                  <div className="ml-6 mt-1 p-2 border rounded whitespace-pre-line flex items-start gap-2">
+                    <Image
+                      src={
+                        cats.find(c => c.name === selectedCat)?.img || catImage
+                      }
+                      alt="고양이 비서"
+                      width={20}
+                      height={20}
+                      style={{borderRadius: '50%'}}
+                    />
+                    <span>{todo.advice.replace(/^🐱 /, '')}</span>
+                  </div>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </main>
   );
 }
