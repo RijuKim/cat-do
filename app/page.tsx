@@ -85,7 +85,7 @@ export default function Page() {
                 }
               }}
               value={date}
-              formatDay={(locale, date) => date.getDate()}
+              formatDay={(locale, date) => date.getDate().toString()}
               tileContent={({date}) => {
                 const key = date.toLocaleDateString('sv-SE');
                 const count = todosByDate[key]?.length || 0;
