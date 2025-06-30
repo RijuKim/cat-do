@@ -46,7 +46,7 @@ export default function Page() {
     if (!todosByDate[selectedKey] && todosByDate[todayKey]) {
       setDate(new Date());
     }
-  }, [todosByDate]);
+  }, [todosByDate, selectedKey]);
 
   return (
     <main className="p-8">
