@@ -41,12 +41,12 @@ export default function Page() {
     saveEdit,
   } = useTodos(date, selectedCat); // 🐾 선택한 고양이를 훅에 전달하려면 훅에서도 사용하도록 수정해 주세요.
 
-  useEffect(() => {
-    const todayKey = new Date().toLocaleDateString('sv-SE');
-    if (!todosByDate[selectedKey] && todosByDate[todayKey]) {
-      setDate(new Date());
-    }
-  }, [todosByDate, selectedKey]);
+  // useEffect(() => {
+  //   const todayKey = new Date().toLocaleDateString('sv-SE');
+  //   if (!todosByDate[selectedKey] && todosByDate[todayKey]) {
+  //     setDate(new Date());
+  //   }
+  // }, [todosByDate, selectedKey]);
 
   return (
     <main className="p-8">
