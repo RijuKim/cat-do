@@ -114,7 +114,7 @@ export default function Page() {
         <div className="md:w-2/3 border rounded p-4">
           <h2 className="text-lg mb-4 flex items-center gap-2">
             <Image
-              src={cats.find(c => c.name === selectedCat)?.img}
+              src={cats.find(c => c.name === selectedCat)?.img || dodoImg}
               alt="고양이 비서"
               width={24}
               height={24}
@@ -141,7 +141,7 @@ export default function Page() {
             {message && (
               <div className="p-4 border rounded mb-4 flex items-center gap-2 bg-yellow-50">
                 <Image
-                  src={cats.find(c => c.name === selectedCat)?.img}
+                  src={cats.find(c => c.name === selectedCat)?.img || dodoImg}
                   alt="고양이 비서"
                   width={24}
                   height={24}
@@ -189,9 +189,11 @@ export default function Page() {
 
                   <button
                     className="bg-green-500 text-white px-2 py-1 rounded flex items-center gap-1"
-                    onClick={() => getAdvice(todo, selectedCat)}>
+                    onClick={() => getAdvice(todo)}>
                     <Image
-                      src={cats.find(c => c.name === selectedCat)?.img}
+                      src={
+                        cats.find(c => c.name === selectedCat)?.img || dodoImg
+                      }
                       alt="도움말"
                       width={16}
                       height={16}
@@ -224,7 +226,7 @@ export default function Page() {
                   <div className="ml-6 mt-1 p-2 border rounded whitespace-pre-line flex items-start gap-2">
                     <Image
                       src={
-                        cats.find(c => c.name === selectedCat)?.img || catImage
+                        cats.find(c => c.name === selectedCat)?.img || dodoImg
                       }
                       alt="고양이 비서"
                       width={20}
