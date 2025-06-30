@@ -7,6 +7,7 @@ interface Todo {
   date: string;
   completed: boolean;
   advice?: string;
+  celebration?: string;
 }
 
 export default function useTodos(date: Date, selectedCat: string) {
