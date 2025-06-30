@@ -12,8 +12,6 @@ interface Todo {
 
 export default function useTodos(date: Date, selectedCat: string) {
   const [mounted, setMounted] = useState(false);
-
-  // ✅ ✅ 타입 지정!
   const [todosByDate, setTodosByDate] = useState<Record<string, Todo[]>>({});
 
   const [input, setInput] = useState('');
@@ -30,7 +28,6 @@ export default function useTodos(date: Date, selectedCat: string) {
       const res = await fetch('/api/todos');
       const todos: Todo[] = await res.json();
 
-      // ✅ ✅ 타입 지정!
       const grouped = todos.reduce<Record<string, Todo[]>>((acc, todo) => {
         const key = todo.date;
         if (!acc[key]) acc[key] = [];

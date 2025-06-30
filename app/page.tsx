@@ -69,31 +69,21 @@ export default function Page() {
         />
       )}
 
-      {/* ✅ 오른쪽 상단 고양이 선택 메뉴 */}
-      {/* <div className="fixed top-4 right-4 flex gap-4 p-2 bg-white rounded-full shadow border">
-        {cats.map(cat => (
-          <button
-            key={cat.name}
-            onClick={() => setSelectedCat(cat.name)}
-            className={`flex flex-col items-center ${
-              selectedCat === cat.name ? 'ring-2 ring-yellow-400' : ''
-            }`}>
-            <div className="w-12 h-12 rounded-full overflow-hidden">
-              <Image src={cat.img} alt={cat.name} width={48} height={48} />
-            </div>
-            <span className="text-xs mt-1">{cat.name}</span>
-            <span className="text-[10px] text-gray-500">{cat.personality}</span>
-          </button>
-        ))}
-      </div> */}
-
       <div className="flex flex-col md:flex-row gap-8 mt-8">
         <div className="md:w-1/3 border rounded p-4">
           <h2 className="text-lg mb-4">📅 날짜 선택</h2>
 
           {mounted && (
             <Calendar
-              onChange={setDate}
+              onChange={value => {
+                if (value instanceof Date) {
+                  setDate(value);
+                } else if (Array.isArray(value) && value[0] instanceof Date) {
+                  setDate(value[0]);
+                } else {
+                  console.warn('Invalid date value:', value);
+                }
+              }}
               value={date}
               formatDay={(locale, date) => date.getDate()}
               tileContent={({date}) => {
