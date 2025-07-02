@@ -40,6 +40,7 @@ export async function POST(request: Request) {
         completed: false,
         advice: '',
         celebration: '',
+        adviceCat: null, // 새로운 할 일 생성 시 adviceCat을 null로 초기화
       },
     });
 
