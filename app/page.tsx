@@ -4,7 +4,7 @@ import {useState} from 'react';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import Image from 'next/image';
-import {FaEdit, FaTrash, FaChevronDown, FaChevronUp} from 'react-icons/fa'; // react-icons 임포트
+import {FaTrash, FaChevronDown, FaChevronUp} from 'react-icons/fa'; // react-icons 임포트
 
 import dodoImg from '../public/assets/dodo.png';
 import cocoImg from '../public/assets/coco.png';
