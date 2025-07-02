@@ -1,4 +1,4 @@
-import {useState, useEffect} from 'react';
+import {useState, useEffect, useCallback} from 'react';
 
 // Todo 타입 선언 (필요하면 수정)
 interface Todo {
@@ -21,25 +21,85 @@ export default function useTodos(date: Date, selectedCat: string) {
 
   const selectedKey = date.toLocaleDateString('sv-SE');
 
+  const fetchTodos = useCallback(async () => {
+    const res = await fetch('/api/todos');
+    const todos: Todo[] = await res.json();
+
+    const grouped = todos.reduce<Record<string, Todo[]>>((acc, todo) => {
+      const key = todo.date;
+      if (!acc[key]) acc[key] = [];
+      acc[key].push(todo);
+      return acc;
+    }, {});
+
+    setTodosByDate(grouped);
+  }, []);
+
   useEffect(() => {
     setMounted(true);
-
-    const fetchTodos = async () => {
-      const res = await fetch('/api/todos');
-      const todos: Todo[] = await res.json();
-
-      const grouped = todos.reduce<Record<string, Todo[]>>((acc, todo) => {
-        const key = todo.date;
-        if (!acc[key]) acc[key] = [];
-        acc[key].push(todo);
-        return acc;
-      }, {});
-
-      setTodosByDate(grouped);
-    };
-
     fetchTodos();
-  }, []);
+  }, [fetchTodos]);
+
+  const getProcrastinationAdvice = useCallback(async () => {
+    setMessage('🐱 냐...');
+
+    const todosForAdvice = todosByDate[selectedKey] || [];
+    const allCompleted = todosForAdvice.every(t => t.completed);
+    const hasTodos = todosForAdvice.length > 0;
+
+    let actionType = 'CHECK_PROCRASTINATION';
+    if (!hasTodos) {
+      actionType = 'WELCOME';
+    } else if (allCompleted) {
+      actionType = 'SUMMARIZE';
+    }
+
+    // 1. DB에서 먼저 확인
+    const adviceRes = await fetch(
+      `/api/advice?date=${selectedKey}&catName=${selectedCat}`,
+    );
+
+    if (adviceRes.ok) {
+      const savedAdvice = await adviceRes.json();
+      if (savedAdvice) {
+        setMessage(savedAdvice.message);
+        return; // 찾았으면 여기서 종료
+      }
+    }
+
+    // 2. DB에 없으면 새로 생성
+    setMessage('🐱 열심히 생각 중...');
+    const generateRes = await fetch('/api/assistant', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        todos: todosForAdvice,
+        catName: selectedCat,
+        action: actionType,
+        date: selectedKey,
+      }),
+    });
+
+    const data = await generateRes.json();
+    if (generateRes.ok) {
+      setMessage(data.message);
+    } else {
+      setMessage('미안, 지금은 조언을 해줄 수 없어.');
+    }
+  }, [selectedKey, selectedCat, todosByDate]);
+
+  useEffect(() => {
+    if (mounted) {
+      getProcrastinationAdvice();
+    }
+  }, [mounted, getProcrastinationAdvice]);
+
+  // todosByDate[selectedKey]가 변경될 때마다 조언을 다시 로드
+  useEffect(() => {
+    if (mounted && todosByDate[selectedKey]) {
+      getProcrastinationAdvice();
+    }
+  }, [mounted, todosByDate, selectedKey, getProcrastinationAdvice]);
 
   const addTodo = async () => {
     if (!input.trim()) return;
@@ -84,6 +144,22 @@ export default function useTodos(date: Date, selectedCat: string) {
       ...todosByDate,
       [selectedKey]: newTodos,
     });
+
+    const allCompleted = newTodos.every(t => t.completed);
+    if (allCompleted && newTodos.length > 0) {
+      await fetch('/api/assistant', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          todos: newTodos,
+          catName: selectedCat,
+          action: 'SUMMARIZE',
+          date: selectedKey,
+        }),
+      });
+    }
+    // 모든 할 일 완료 후 조언을 다시 로드
+    getProcrastinationAdvice();
   };
 
   const deleteTodo = async (todo: Todo) => {
@@ -108,6 +184,7 @@ export default function useTodos(date: Date, selectedCat: string) {
       body: JSON.stringify({
         todo: todo.text,
         catName: selectedCat,
+        action: 'ADVICE',
       }),
     });
 
@@ -116,7 +193,10 @@ export default function useTodos(date: Date, selectedCat: string) {
     const updatedRes = await fetch(`/api/todos/${todo.id}`, {
       method: 'PUT',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({advice: `🐱 ${data.message}`}),
+      body: JSON.stringify({
+        advice: `🐱 ${data.message}`,
+        adviceCat: selectedCat,
+      }),
     });
 
     const updatedTodo: Todo = await updatedRes.json();
@@ -180,6 +260,7 @@ export default function useTodos(date: Date, selectedCat: string) {
     toggleComplete,
     deleteTodo,
     getAdvice,
+    getProcrastinationAdvice,
     startEdit,
     saveEdit,
   };

@@ -4,6 +4,7 @@ import {useState} from 'react';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import Image from 'next/image';
+import {FaEdit, FaTrash, FaChevronDown, FaChevronUp} from 'react-icons/fa'; // react-icons 임포트
 
 import dodoImg from '../public/assets/dodo.png';
 import cocoImg from '../public/assets/coco.png';
@@ -16,6 +17,8 @@ export default function Page() {
   const [date, setDate] = useState(new Date());
   const [selectedCat, setSelectedCat] = useState('두두');
   const [showCatModal, setShowCatModal] = useState(false);
+  const [isAdviceVisible, setIsAdviceVisible] = useState(false); // 조언 표시 여부 상태
+  const [visibleAdviceIds, setVisibleAdviceIds] = useState<string[]>([]); // 개별 조언 표시 여부
 
   const cats = [
     {name: '두두', personality: '새침한 츤데레', img: dodoImg},
@@ -37,6 +40,7 @@ export default function Page() {
     toggleComplete,
     deleteTodo,
     getAdvice,
+    getProcrastinationAdvice,
     startEdit,
     saveEdit,
   } = useTodos(date, selectedCat); // 🐾 선택한 고양이를 훅에 전달하려면 훅에서도 사용하도록 수정해 주세요.
@@ -131,7 +135,8 @@ export default function Page() {
               placeholder="할 일을 입력하세요"
             />
             <button
-              className="bg-blue-500 text-white px-4 py-2 rounded"
+              className="text-white px-4 py-2 rounded"
+              style={{backgroundColor: '#0275ff'}}
               onClick={addTodo}>
               추가
             </button>
@@ -139,17 +144,46 @@ export default function Page() {
 
           <ul className="mb-4">
             {message && (
-              <div className="p-4 border rounded mb-4 flex items-center gap-2 bg-yellow-50">
-                <Image
-                  src={cats.find(c => c.name === selectedCat)?.img || dodoImg}
-                  alt="고양이 비서"
-                  width={24}
-                  height={24}
-                  style={{borderRadius: '50%'}}
-                />
-                <span className="whitespace-pre-line">
-                  {message.replace(/^🐱 /, '')}
-                </span>
+              <div className="p-4 border rounded mb-4 bg-yellow-50">
+                <div className="flex justify-between items-start">
+                  <div className="flex items-start gap-2 overflow-hidden pr-2">
+                    <Image
+                      src={
+                        cats.find(c => c.name === selectedCat)?.img || dodoImg
+                      }
+                      alt="고양이 비서"
+                      width={24}
+                      height={24}
+                      style={{borderRadius: '50%'}}
+                      className="flex-shrink-0 cursor-pointer"
+                      onClick={getProcrastinationAdvice}
+                    />
+                    {!isAdviceVisible && (
+                      <span className="truncate font-medium text-gray-600">
+                        {message.replace(/^🐱 /, '').split('\n')[0]}
+                      </span>
+                    )}
+                  </div>
+                  <button
+                    className="text-sm text-gray-500 flex-shrink-0 pl-2"
+                    onClick={() => setIsAdviceVisible(!isAdviceVisible)}>
+                    {isAdviceVisible ? (
+                      <FaChevronUp size={16} />
+                    ) : (
+                      <FaChevronDown size={16} />
+                    )}
+                  </button>
+                </div>
+                <div
+                  className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                    isAdviceVisible
+                      ? 'max-h-screen opacity-100 mt-2 ml-8'
+                      : 'max-h-0 opacity-0'
+                  }`}>
+                  <span className="whitespace-pre-line text-gray-800">
+                    {message.replace(/^🐱 /, '')}
+                  </span>
+                </div>
               </div>
             )}
 
@@ -183,16 +217,23 @@ export default function Page() {
                     </>
                   ) : (
                     <span
-                      className={
+                      className={`cursor-pointer ${
                         todo.completed ? 'line-through text-gray-500' : ''
-                      }>
+                      }`}
+                      onClick={() => startEdit(index)}>
                       {todo.text}
                     </span>
                   )}
 
                   <button
                     className="bg-green-500 text-white px-2 py-1 rounded flex items-center gap-1"
-                    onClick={() => getAdvice(todo)}>
+                    onClick={() => {
+                      getAdvice(todo);
+                      // 조언을 요청하면 바로 해당 조언이 보이도록 ID 추가
+                      if (!visibleAdviceIds.includes(todo.id)) {
+                        setVisibleAdviceIds([...visibleAdviceIds, todo.id]);
+                      }
+                    }}>
                     <Image
                       src={
                         cats.find(c => c.name === selectedCat)?.img || dodoImg
@@ -206,16 +247,28 @@ export default function Page() {
                   </button>
 
                   <button
-                    className="bg-yellow-500 text-white px-2 py-1 rounded"
-                    onClick={() => startEdit(index)}>
-                    수정
+                    className="bg-transparent"
+                    onClick={() => deleteTodo(todo)}>
+                    <FaTrash size={12} style={{color: '#a5aaa3'}} />
                   </button>
 
-                  <button
-                    className="bg-gray-400 text-white px-2 py-1 rounded"
-                    onClick={() => deleteTodo(todo)}>
-                    삭제
-                  </button>
+                  {todo.advice && (
+                    <button
+                      className="text-xs ml-2 font-medium"
+                      onClick={() =>
+                        setVisibleAdviceIds(prev =>
+                          prev.includes(todo.id)
+                            ? prev.filter(id => id !== todo.id)
+                            : [...prev, todo.id],
+                        )
+                      }>
+                      {visibleAdviceIds.includes(todo.id) ? (
+                        <FaChevronUp size={10} style={{color: '#a5aaa3'}} />
+                      ) : (
+                        <FaChevronDown size={10} style={{color: '#a5aaa3'}} />
+                      )}
+                    </button>
+                  )}
 
                   {todo.celebration && (
                     <div
@@ -231,17 +284,25 @@ export default function Page() {
                 </div>
 
                 {todo.advice && (
-                  <div className="ml-6 mt-1 p-2 border rounded whitespace-pre-line flex items-start gap-2">
-                    <Image
-                      src={
-                        cats.find(c => c.name === selectedCat)?.img || dodoImg
-                      }
-                      alt="고양이 비서"
-                      width={20}
-                      height={20}
-                      style={{borderRadius: '50%'}}
-                    />
-                    <span>{todo.advice.replace(/^🐱 /, '')}</span>
+                  <div
+                    className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                      visibleAdviceIds.includes(todo.id)
+                        ? 'max-h-screen opacity-100 ml-6 mt-1'
+                        : 'max-h-0 opacity-0'
+                    }`}>
+                    <div className="p-2 border rounded whitespace-pre-line flex items-start gap-2">
+                      <Image
+                        src={
+                          cats.find(c => c.name === todo.adviceCat)?.img ||
+                          dodoImg
+                        }
+                        alt="고양이 비서"
+                        width={20}
+                        height={20}
+                        style={{borderRadius: '50%'}}
+                      />
+                      <span>{todo.advice.replace(/^🐱 /, '')}</span>
+                    </div>
                   </div>
                 )}
               </li>
