@@ -1,4 +1,5 @@
-import {useState, useEffect, useCallback} from 'react';
+import { Session } from "next-auth";
+import { useState, useEffect, useCallback } from "react";
 
 // Todo 타입 선언 (필요하면 수정)
 interface Todo {
@@ -11,19 +12,25 @@ interface Todo {
   adviceCat?: string;
 }
 
-export default function useTodos(date: Date, selectedCat: string) {
+export default function useTodos(
+  date: Date,
+  selectedCat: string,
+  session: Session | null
+) {
   const [mounted, setMounted] = useState(false);
   const [todosByDate, setTodosByDate] = useState<Record<string, Todo[]>>({});
 
-  const [input, setInput] = useState('');
-  const [message, setMessage] = useState('');
+  const [input, setInput] = useState("");
+  const [message, setMessage] = useState("");
   const [editIndex, setEditIndex] = useState<number | null>(null);
-  const [editText, setEditText] = useState('');
+  const [editText, setEditText] = useState("");
 
-  const selectedKey = date.toLocaleDateString('sv-SE');
+  const selectedKey = date.toLocaleDateString("sv-SE");
 
   const fetchTodos = useCallback(async () => {
-    const res = await fetch('/api/todos');
+    if (!session) return;
+
+    const res = await fetch("/api/todos");
     const todos: Todo[] = await res.json();
 
     const grouped = todos.reduce<Record<string, Todo[]>>((acc, todo) => {
@@ -42,22 +49,22 @@ export default function useTodos(date: Date, selectedCat: string) {
   }, [fetchTodos]);
 
   const getProcrastinationAdvice = useCallback(async () => {
-    setMessage('🐱 냐...');
+    setMessage("🐱 냐...");
 
     const todosForAdvice = todosByDate[selectedKey] || [];
-    const allCompleted = todosForAdvice.every(t => t.completed);
+    const allCompleted = todosForAdvice.every((t) => t.completed);
     const hasTodos = todosForAdvice.length > 0;
 
-    let actionType = 'CHECK_PROCRASTINATION';
+    let actionType = "CHECK_PROCRASTINATION";
     if (!hasTodos) {
-      actionType = 'WELCOME';
+      actionType = "WELCOME";
     } else if (allCompleted) {
-      actionType = 'SUMMARIZE';
+      actionType = "SUMMARIZE";
     }
 
     // 1. DB에서 먼저 확인
     const adviceRes = await fetch(
-      `/api/advice?date=${selectedKey}&catName=${selectedCat}`,
+      `/api/advice?date=${selectedKey}&catName=${selectedCat}`
     );
 
     if (adviceRes.ok) {
@@ -69,10 +76,10 @@ export default function useTodos(date: Date, selectedCat: string) {
     }
 
     // 2. DB에 없으면 새로 생성
-    setMessage('🐱 열심히 생각 중...');
-    const generateRes = await fetch('/api/assistant', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
+    setMessage("🐱 열심히 생각 중...");
+    const generateRes = await fetch("/api/assistant", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         todos: todosForAdvice,
         catName: selectedCat,
@@ -85,7 +92,7 @@ export default function useTodos(date: Date, selectedCat: string) {
     if (generateRes.ok) {
       setMessage(data.message);
     } else {
-      setMessage('미안, 지금은 조언을 해줄 수 없어.');
+      setMessage("미안, 지금은 조언을 해줄 수 없어.");
     }
   }, [selectedKey, selectedCat, todosByDate]);
 
@@ -105,10 +112,10 @@ export default function useTodos(date: Date, selectedCat: string) {
   const addTodo = async () => {
     if (!input.trim()) return;
 
-    const res = await fetch('/api/todos', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({text: input.trim(), date: selectedKey}),
+    const res = await fetch("/api/todos", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: input.trim(), date: selectedKey }),
     });
 
     const newTodo: Todo = await res.json();
@@ -118,25 +125,25 @@ export default function useTodos(date: Date, selectedCat: string) {
       [selectedKey]: [...(todosByDate[selectedKey] || []), newTodo],
     };
     setTodosByDate(updated);
-    setInput('');
+    setInput("");
   };
 
   const toggleComplete = async (todo: Todo) => {
     const completed = !todo.completed;
     const celebration = completed
       ? `🐱 "${todo.text}" 완료! 집사 최고! 🐾`
-      : '';
+      : "";
 
     const res = await fetch(`/api/todos/${todo.id}`, {
-      method: 'PUT',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({completed, celebration}),
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ completed, celebration }),
     });
 
     const updatedTodo: Todo = await res.json();
 
-    const newTodos = (todosByDate[selectedKey] || []).map(t =>
-      t.id === todo.id ? updatedTodo : t,
+    const newTodos = (todosByDate[selectedKey] || []).map((t) =>
+      t.id === todo.id ? updatedTodo : t
     );
 
     newTodos.sort((a, b) => Number(a.completed) - Number(b.completed));
@@ -146,15 +153,15 @@ export default function useTodos(date: Date, selectedCat: string) {
       [selectedKey]: newTodos,
     });
 
-    const allCompleted = newTodos.every(t => t.completed);
+    const allCompleted = newTodos.every((t) => t.completed);
     if (allCompleted && newTodos.length > 0) {
-      await fetch('/api/assistant', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
+      await fetch("/api/assistant", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           todos: newTodos,
           catName: selectedCat,
-          action: 'SUMMARIZE',
+          action: "SUMMARIZE",
           date: selectedKey,
         }),
       });
@@ -164,10 +171,10 @@ export default function useTodos(date: Date, selectedCat: string) {
   };
 
   const deleteTodo = async (todo: Todo) => {
-    await fetch(`/api/todos/${todo.id}`, {method: 'DELETE'});
+    await fetch(`/api/todos/${todo.id}`, { method: "DELETE" });
 
     const newTodos = (todosByDate[selectedKey] || []).filter(
-      t => t.id !== todo.id,
+      (t) => t.id !== todo.id
     );
 
     setTodosByDate({
@@ -177,23 +184,23 @@ export default function useTodos(date: Date, selectedCat: string) {
   };
 
   const getAdvice = async (todo: Todo) => {
-    setMessage('🐱 생각 중이에요...');
+    setMessage("🐱 생각 중이에요...");
 
-    const res = await fetch('/api/assistant', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
+    const res = await fetch("/api/assistant", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         todo: todo.text,
         catName: selectedCat,
-        action: 'ADVICE',
+        action: "ADVICE",
       }),
     });
 
     const data = await res.json();
 
     const updatedRes = await fetch(`/api/todos/${todo.id}`, {
-      method: 'PUT',
-      headers: {'Content-Type': 'application/json'},
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         advice: `🐱 ${data.message}`,
         adviceCat: selectedCat,
@@ -202,8 +209,8 @@ export default function useTodos(date: Date, selectedCat: string) {
 
     const updatedTodo: Todo = await updatedRes.json();
 
-    const newTodos = (todosByDate[selectedKey] || []).map(t =>
-      t.id === todo.id ? updatedTodo : t,
+    const newTodos = (todosByDate[selectedKey] || []).map((t) =>
+      t.id === todo.id ? updatedTodo : t
     );
 
     setTodosByDate({
@@ -226,9 +233,9 @@ export default function useTodos(date: Date, selectedCat: string) {
     const todo = todosByDate[selectedKey][editIndex];
 
     const res = await fetch(`/api/todos/${todo.id}`, {
-      method: 'PUT',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({text: editText.trim()}),
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: editText.trim() }),
     });
 
     const updatedTodo: Todo = await res.json();
@@ -242,7 +249,7 @@ export default function useTodos(date: Date, selectedCat: string) {
     });
 
     setEditIndex(null);
-    setEditText('');
+    setEditText("");
   };
 
   return {
