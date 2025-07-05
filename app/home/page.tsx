@@ -27,11 +27,6 @@ export default function MainPage() {
     { name: "깜냥", personality: "불친절한 고양이", img: kkamnyangImg },
   ];
 
-  // ✅ 세션 로딩 중
-  if (status === "loading") return <div>로딩 중...</div>;
-  if (!session) return <div>로그인이 필요합니다</div>;
-
-  // ✅ 세션이 반드시 있을 때만 훅 실행
   const {
     mounted,
     todosByDate,
@@ -50,6 +45,10 @@ export default function MainPage() {
     startEdit,
     saveEdit,
   } = useTodos(date, selectedCat, session);
+
+  // ✅ 세션 로딩 중
+  if (status === "loading") return <div>로딩 중...</div>;
+  if (!session) return <div>로그인이 필요합니다</div>;
 
   return (
     <main className="p-8">

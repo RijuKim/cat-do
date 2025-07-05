@@ -17,7 +17,7 @@ export default function HomePage() {
     if (session) {
       router.push("/home");
     }
-  }, [session]);
+  }, [session, router]);
 
   return <SplashScreen onLogin={handleLogin} />;
 }
