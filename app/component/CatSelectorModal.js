@@ -1,6 +1,6 @@
 'use client';
 
-import {useEffect, useRef} from 'react';
+import {useState, useEffect, useRef} from 'react';
 import Image from 'next/image';
 
 export default function CatSelectorModal({
@@ -9,9 +9,9 @@ export default function CatSelectorModal({
   onSelectCat,
   onClose,
 }) {
+  const [tempSelectedCat, setTempSelectedCat] = useState(selectedCat);
   const backdropRef = useRef(null);
 
-  // ESC 누르면 닫히도록
   useEffect(() => {
     const handleEsc = e => {
       if (e.key === 'Escape') {
@@ -22,11 +22,15 @@ export default function CatSelectorModal({
     return () => document.removeEventListener('keydown', handleEsc);
   }, [onClose]);
 
-  // 바깥 클릭 시 닫히도록
   const handleBackdropClick = e => {
     if (e.target === backdropRef.current) {
       onClose();
     }
+  };
+
+  const handleSelect = () => {
+    onSelectCat(tempSelectedCat);
+    onClose();
   };
 
   return (
@@ -34,33 +38,52 @@ export default function CatSelectorModal({
       ref={backdropRef}
       onClick={handleBackdropClick}
       className="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-sm bg-black/30 transition-opacity duration-300 animate-fadeIn">
-      <div className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md relative transform transition-all duration-300 animate-slideUp">
+      <div className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-lg relative transform transition-all duration-300 animate-slideUp">
         <button
-          className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 text-xl"
+          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-2xl"
           onClick={onClose}>
-          ✕
+          &times;
         </button>
-        <h2 className="text-xl font-bold mb-6 text-center">
-          🐱 나의 냥이 선택
+        <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">
+          당신의 할 일을 도와줄 냥이를 선택하세요!
         </h2>
-        <div className="flex justify-center gap-6">
+        <div className="grid grid-cols-3 gap-6 mb-8">
           {cats.map(cat => (
-            <button
+            <div
               key={cat.name}
-              onClick={() => {
-                onSelectCat(cat.name);
-                onClose();
-              }}
-              className={`flex flex-col items-center transition ${
-                selectedCat === cat.name ? 'ring-4 ring-yellow-400' : ''
+              onClick={() => setTempSelectedCat(cat.name)}
+              className={`p-4 rounded-xl cursor-pointer transition-all duration-200 ${
+                tempSelectedCat === cat.name
+                  ? 'bg-sky-100 ring-2 ring-[#B0E2F2] shadow-lg'
+                  : 'bg-gray-50 hover:shadow-md'
               }`}>
-              <div className="w-20 h-20 rounded-full overflow-hidden shadow">
-                <Image src={cat.img} alt={cat.name} width={80} height={80} />
+              <div className="relative w-24 h-24 mx-auto mb-3">
+                <Image
+                  src={cat.img}
+                  alt={cat.name}
+                  layout="fill"
+                  objectFit="cover"
+                  className="rounded-full"
+                />
               </div>
-              <span className="text-sm mt-2 font-medium">{cat.name}</span>
-              <span className="text-xs text-gray-500">{cat.personality}</span>
-            </button>
+              <div className="text-center">
+                <p className="font-bold text-lg text-gray-800">{cat.name}</p>
+                <p className="text-sm text-gray-500">{cat.personality}</p>
+              </div>
+            </div>
           ))}
+        </div>
+        <div className="flex justify-end gap-4">
+          <button
+            onClick={onClose}
+            className="px-6 py-2 rounded-lg text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors">
+            취소
+          </button>
+          <button
+            onClick={handleSelect}
+            className="px-6 py-2 rounded-lg text-white bg-[#B0E2F2] hover:opacity-90 transition-opacity shadow">
+            선택 완료
+          </button>
         </div>
       </div>
     </div>

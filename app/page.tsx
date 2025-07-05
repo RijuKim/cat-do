@@ -1,21 +1,21 @@
-"use client";
+'use client';
 
-import SplashScreen from "./component/SplashScreen";
-import { signIn, useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import SplashScreen from './component/SplashScreen';
+import {signIn, useSession} from 'next-auth/react';
+import {useRouter} from 'next/navigation';
+import {useEffect} from 'react';
 
 export default function HomePage() {
-  const { data: session } = useSession();
+  const {data: session} = useSession();
   const router = useRouter();
 
   const handleLogin = () => {
-    signIn("kakao");
+    signIn('kakao');
   };
 
   useEffect(() => {
     if (session) {
-      router.push("/home");
+      router.push('/home');
     }
   }, [session, router]);
 

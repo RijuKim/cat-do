@@ -29,13 +29,12 @@ export async function GET(req: Request) {
     if (advice) {
       return NextResponse.json(advice);
     } else {
-      return NextResponse.json(null, {status: 200}); // 조언이 없는 경우
+      // 조언이 없는 경우, 404 대신 null을 포함한 200 OK를 반환해야
+      // 클라이언트에서 새로운 조언을 생성하는 로직으로 넘어갈 수 있습니다.
+      return NextResponse.json(null, {status: 200});
     }
   } catch (error) {
     console.error('Failed to fetch advice:', error);
-    return NextResponse.json(
-      {error: 'Failed to fetch advice'},
-      {status: 500},
-    );
+    return NextResponse.json({error: 'Failed to fetch advice'}, {status: 500});
   }
 }

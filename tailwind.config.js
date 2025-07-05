@@ -3,6 +3,9 @@ module.exports = {
   content: ['./app/**/*.{js,ts,jsx,tsx}'],
   theme: {
     extend: {
+      colors: {
+        primary: '#B0E2F2',
+      },
       keyframes: {
         fadeIn: {
           '0%': {opacity: 0},
