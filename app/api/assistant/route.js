@@ -31,7 +31,7 @@ export const POST = async req => {
   switch (action) {
     case 'ADVICE':
       userContent = `집사를 응원해줘. 할 일을 하는 방법을 1~2줄로 간략히 방향성을 제시해줘.
-          단 지시한 단어(새침한, 귀여운 등)를 직접 어색하게 사용하지 말아줘.\n\n할 일: ${todo}`;
+          단 지시한 단어(새침한, 귀여운 등)를 직접 어색하게 사용하지 말아줘. 너는 고양이니까 반말을 사용해줘.\n\n할 일: ${todo}`;
       break;
     case 'SUMMARIZE':
       const completedTodos = todos.filter(t => t.completed).map(t => t.text);
@@ -82,7 +82,7 @@ export const POST = async req => {
       Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
     },
     body: JSON.stringify({
-      model: 'gpt-4o',
+      model: 'gpt-4o-mini',
       messages: [
         {
           role: 'system',
@@ -119,7 +119,7 @@ export const POST = async req => {
   } else {
     console.error('OpenAI API Error:', data);
     return Response.json(
-      {message: '미안, 지금은 대답할 수 없어. 나중에 다시 시도해줘.'},
+      {message: '미안, 지금은 대답할 수 없다냥. 나중에 다시 시도해줘!'},
       {status: 500},
     );
   }
