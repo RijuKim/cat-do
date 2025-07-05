@@ -35,9 +35,6 @@ export async function GET(req: Request) {
     }
   } catch (error) {
     console.error('Failed to fetch advice:', error);
-    return NextResponse.json(
-      {error: 'Failed to fetch advice'},
-      {status: 500},
-    );
+    return NextResponse.json({error: 'Failed to fetch advice'}, {status: 500});
   }
 }

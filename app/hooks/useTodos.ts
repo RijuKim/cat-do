@@ -1,5 +1,5 @@
 'use client';
-
+import {Session} from 'next-auth';
 import {useState, useEffect, useCallback} from 'react';
 
 // Todo 타입 선언 (adviceCat 추가)
@@ -13,11 +13,14 @@ interface Todo {
   celebration?: string;
 }
 
-export default function useTodos(date: Date, selectedCat: string) {
+export default function useTodos(
+  date: Date,
+  selectedCat: string,
+  session: Session | null,
+) {
   const [mounted, setMounted] = useState(false);
   const [todosByDate, setTodosByDate] = useState<Record<string, Todo[]>>({});
   const [completionAdvice, setCompletionAdvice] = useState<string | null>(null);
-
   const [input, setInput] = useState('');
   const [message, setMessage] = useState('');
   const [editIndex, setEditIndex] = useState<number | null>(null);
@@ -25,12 +28,42 @@ export default function useTodos(date: Date, selectedCat: string) {
 
   const selectedKey = date.toLocaleDateString('sv-SE');
 
+  // 날짜가 바뀌면 완료 조언 초기화
+  useEffect(() => {
+    setCompletionAdvice(null);
+  }, [selectedKey]);
+
+  // 고양이가 바뀌면 완료 조언 초기화
+  // useEffect(() => {
+  //   setCompletionAdvice(null);
+  // }, [selectedCat]);
+
+  // const fetchTodos = useCallback(async () => {
+  //   if (!session) return;
+
+  //   const res = await fetch('/api/todos');
+  //   if (!res.ok) return;
+
+  //   const todos: Todo[] = await res.json();
+
+  //   const grouped = todos.reduce<Record<string, Todo[]>>((acc, todo) => {
+  //     const key = todo.date;
+  //     if (!acc[key]) acc[key] = [];
+  //     acc[key].push(todo);
+  //     return acc;
+  //   }, {});
+
+  //   setTodosByDate(grouped);
+  // }, [session]);
+
   // 날짜 또는 고양이가 바뀌면 완료 조언 초기화
   useEffect(() => {
     setCompletionAdvice(null);
   }, [selectedKey, selectedCat]);
 
   const fetchTodos = useCallback(async () => {
+    if (!session) return;
+
     const res = await fetch('/api/todos');
     const todos: Todo[] = await res.json();
 
@@ -42,7 +75,7 @@ export default function useTodos(date: Date, selectedCat: string) {
     }, {});
 
     setTodosByDate(grouped);
-  }, []);
+  }, [session]);
 
   useEffect(() => {
     setMounted(true);
@@ -67,9 +100,10 @@ export default function useTodos(date: Date, selectedCat: string) {
         return;
       }
 
+      // 완료된 할 일 요약
       setMessage('🐱 냐...');
-      const actionType = 'SUMMARIZE';
 
+      // DB에서 요약 먼저 확인
       const adviceRes = await fetch(
         `/api/advice?date=${selectedKey}&catName=${selectedCat}`,
       );
@@ -83,6 +117,7 @@ export default function useTodos(date: Date, selectedCat: string) {
         }
       }
 
+      // 없으면 새로 생성
       setMessage('🐱 열심히 생각 중...');
       const generateRes = await fetch('/api/assistant', {
         method: 'POST',
@@ -90,7 +125,7 @@ export default function useTodos(date: Date, selectedCat: string) {
         body: JSON.stringify({
           todos: todosForAdvice,
           catName: selectedCat,
-          action: actionType,
+          action: 'SUMMARIZE',
           date: selectedKey,
         }),
       });
@@ -98,7 +133,7 @@ export default function useTodos(date: Date, selectedCat: string) {
       const data = await generateRes.json();
       if (generateRes.ok) {
         setMessage(data.message);
-        setCompletionAdvice(data.message); // 조언 저장
+        setCompletionAdvice(data.message);
       } else {
         setMessage('미안, 지금은 조언을 해줄 수 없어.');
       }
@@ -130,6 +165,7 @@ export default function useTodos(date: Date, selectedCat: string) {
     };
     setTodosByDate(updated);
     setInput('');
+    getProcrastinationAdvice();
   };
 
   const toggleComplete = async (todo: Todo) => {
@@ -156,6 +192,8 @@ export default function useTodos(date: Date, selectedCat: string) {
       ...todosByDate,
       [selectedKey]: newTodos,
     });
+
+    getProcrastinationAdvice();
   };
 
   const deleteTodo = async (todo: Todo) => {
@@ -169,10 +207,11 @@ export default function useTodos(date: Date, selectedCat: string) {
       ...todosByDate,
       [selectedKey]: newTodos,
     });
+    getProcrastinationAdvice();
   };
 
   const getAdvice = async (todo: Todo) => {
-    setMessage('🐱 열심히 생각 중이...');
+    setMessage('🐱 열심히 생각 중...');
 
     const res = await fetch('/api/assistant', {
       method: 'POST',
@@ -191,7 +230,7 @@ export default function useTodos(date: Date, selectedCat: string) {
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({
         advice: `🐱 ${data.message}`,
-        adviceCat: selectedCat, // adviceCat 저장 추가
+        adviceCat: selectedCat,
       }),
     });
 
@@ -256,7 +295,7 @@ export default function useTodos(date: Date, selectedCat: string) {
     toggleComplete,
     deleteTodo,
     getAdvice,
-    getProcrastinationAdvice, // 반환값에 추가
+    getProcrastinationAdvice,
     startEdit,
     saveEdit,
   };

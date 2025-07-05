@@ -14,9 +14,30 @@ model Todo {
   text        String
   completed   Boolean   @default(false)
   advice      String?
+  adviceCat   String? // 어떤 고양이가 조언했는지 저장
   celebration String?
   date        String
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+  
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
 }
 
+model ProcrastinationAdvice {
+  id        String   @id @default(cuid())
+  date      String
+  catName   String
+  message   String
+  createdAt DateTime @default(now())
+
+  @@unique([date, catName])
+}
+
+model User {
+  id        String   @id @default(cuid())
+  kakaoId   String   @unique
+  createdAt DateTime @default(now())
+
+  todos     Todo[]
+}
