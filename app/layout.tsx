@@ -1,14 +1,18 @@
-import './globals.css';
+"use client";
 
-export const metadata = {
-  title: 'Cat-Do',
-  description: '고양이 비서 캣두',
-};
+import "./globals.css";
+import { SessionProvider } from "next-auth/react";
 
-export default function RootLayout({children}: {children: React.ReactNode}) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="ko">
-      <body>{children}</body>
+      <body>
+        <SessionProvider>{children}</SessionProvider>
+      </body>
     </html>
   );
 }
