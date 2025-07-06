@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import {useState, useMemo} from 'react';
-import {signOut, useSession} from 'next-auth/react';
-import Calendar from 'react-calendar';
-import 'react-calendar/dist/Calendar.css';
-import Image from 'next/image';
+import { useState, useMemo } from "react";
+import { signOut, useSession } from "next-auth/react";
+import Calendar from "react-calendar";
+import "react-calendar/dist/Calendar.css";
+import Image from "next/image";
 import {
   FaTrash,
   FaChevronDown,
@@ -15,10 +15,10 @@ import {
   FaCat,
   FaLightbulb,
   FaPaw,
-} from 'react-icons/fa';
+} from "react-icons/fa";
 
-import useTodos from '../hooks/useTodos';
-import CatSelectorModal from '../component/CatSelectorModal';
+import useTodos from "../hooks/useTodos";
+import CatSelectorModal from "../component/CatSelectorModal";
 
 // ✅ 접이식 캘린더 컴포넌트
 interface Todo {
@@ -47,7 +47,8 @@ const FoldableCalendar = ({
     <div className="mb-6 transition-all duration-300">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex justify-between items-center p-3 bg-gray-100 hover:bg-gray-200 rounded-lg transition">
+        className="w-full flex justify-between items-center p-3 bg-gray-100 hover:bg-gray-200 rounded-lg transition"
+      >
         <span className="font-semibold text-gray-700">📅 캘린더 보기</span>
         {isOpen ? (
           <FaChevronUp className="text-gray-500" />
@@ -58,19 +59,19 @@ const FoldableCalendar = ({
       {isOpen && mounted && (
         <div className="mt-4 flex justify-center">
           <Calendar
-            onChange={value => {
+            onChange={(value) => {
               if (value instanceof Date) setDate(value);
             }}
             value={date}
             formatDay={(locale, date) => date.getDate().toString()}
-            tileContent={({date, view}) => {
-              if (view === 'month') {
-                const key = date.toLocaleDateString('sv-SE');
+            tileContent={({ date, view }) => {
+              if (view === "month") {
+                const key = date.toLocaleDateString("sv-SE");
                 const todosForDay = todosByDate[key] || [];
                 const count = todosForDay.length;
                 if (count === 0) return null;
 
-                const allCompleted = todosForDay.every(t => t.completed);
+                const allCompleted = todosForDay.every((t) => t.completed);
 
                 return (
                   <div className="absolute top-0 right-0">
@@ -96,21 +97,21 @@ const FoldableCalendar = ({
 // ✅ 메인 페이지 컴포넌트
 export default function MainPage() {
   const [date, setDate] = useState(new Date());
-  const [selectedCat, setSelectedCat] = useState('두두');
+  const [selectedCat, setSelectedCat] = useState("두두");
   const [showCatModal, setShowCatModal] = useState(false);
   const [visibleAdviceIds, setVisibleAdviceIds] = useState<string[]>([]);
 
   const cats = useMemo(
     () => [
-      {name: '두두', personality: '새침한 츤데레', img: '/assets/dodo.png'},
-      {name: '코코', personality: '다정한 개냥이', img: '/assets/coco.png'},
+      { name: "두두", personality: "새침한 츤데레", img: "/assets/dodo.png" },
+      { name: "코코", personality: "다정한 개냥이", img: "/assets/coco.png" },
       {
-        name: '깜냥',
-        personality: '불친절한 고양이',
-        img: '/assets/kkamnyang.png',
+        name: "깜냥",
+        personality: "불친절한 고양이",
+        img: "/assets/kkamnyang.png",
       },
     ],
-    [],
+    []
   );
 
   const { data: session } = useSession();
@@ -134,8 +135,8 @@ export default function MainPage() {
   } = useTodos(date, selectedCat, session);
 
   const selectedCatInfo = useMemo(
-    () => cats.find(c => c.name === selectedCat) || cats[0],
-    [cats, selectedCat],
+    () => cats.find((c) => c.name === selectedCat) || cats[0],
+    [cats, selectedCat]
   );
 
   const handleAddTodo = () => {
@@ -143,13 +144,13 @@ export default function MainPage() {
   };
 
   const toggleAdvice = (id: string) => {
-    setVisibleAdviceIds(prev =>
-      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id],
+    setVisibleAdviceIds((prev) =>
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
     );
   };
 
   const getCatImage = (catName: string | undefined): string => {
-    return cats.find(c => c.name === catName)?.img || '/assets/dodo.png';
+    return cats.find((c) => c.name === catName)?.img || "/assets/dodo.png";
   };
 
   return (
@@ -163,7 +164,8 @@ export default function MainPage() {
           <div className="flex gap-4 items-center">
             <button
               className="flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow-md hover:shadow-lg transition-shadow"
-              onClick={() => setShowCatModal(true)}>
+              onClick={() => setShowCatModal(true)}
+            >
               <Image
                 src={selectedCatInfo.img}
                 alt={selectedCatInfo.name}
@@ -177,7 +179,8 @@ export default function MainPage() {
             </button>
             <button
               className="bg-gray-300 px-4 py-2 rounded-full shadow hover:bg-gray-400 transition"
-              onClick={() => signOut()}>
+              onClick={() => signOut({ callbackUrl: "/", redirect: true })}
+            >
               로그아웃
             </button>
           </div>
@@ -206,7 +209,7 @@ export default function MainPage() {
                   className="rounded-full flex-shrink-0 mt-1"
                 />
                 <p className="text-sm whitespace-pre-line leading-relaxed">
-                  {message.replace(/^🐱 /, '')}
+                  {message.replace(/^🐱 /, "")}
                 </p>
               </div>
             </div>
@@ -216,13 +219,14 @@ export default function MainPage() {
             <input
               className="flex-grow border-2 border-gray-200 p-3 rounded-lg focus:outline-none focus:border-[#B0E2F2] transition"
               value={input}
-              onChange={e => setInput(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && handleAddTodo()}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleAddTodo()}
               placeholder="오늘의 할 일을 추가하세요!"
             />
             <button
               className="bg-[#B0E2F2] text-white p-3 rounded-lg hover:opacity-90 transition shadow"
-              onClick={handleAddTodo}>
+              onClick={handleAddTodo}
+            >
               <FaPlus />
             </button>
           </div>
@@ -236,12 +240,13 @@ export default function MainPage() {
                       <input
                         className="flex-grow border-b-2 border-[#B0E2F2] focus:outline-none bg-transparent"
                         value={editText}
-                        onChange={e => setEditText(e.target.value)}
-                        onKeyDown={e => e.key === 'Enter' && saveEdit()}
+                        onChange={(e) => setEditText(e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && saveEdit()}
                       />
                       <button
                         className="p-2 text-gray-600 hover:text-green-500"
-                        onClick={saveEdit}>
+                        onClick={saveEdit}
+                      >
                         <FaSave />
                       </button>
                     </>
@@ -256,8 +261,9 @@ export default function MainPage() {
                         />
                         <span
                           className={`text-gray-700 ${
-                            todo.completed ? 'line-through text-gray-400' : ''
-                          }`}>
+                            todo.completed ? "line-through text-gray-400" : ""
+                          }`}
+                        >
                           {todo.text}
                         </span>
                       </div>
@@ -267,17 +273,20 @@ export default function MainPage() {
                           onClick={() => {
                             if (!todo.advice) getAdvice(todo);
                             toggleAdvice(todo.id);
-                          }}>
+                          }}
+                        >
                           <FaLightbulb />
                         </button>
                         <button
                           className="p-2 text-gray-500 hover:text-yellow-500"
-                          onClick={() => startEdit(index)}>
+                          onClick={() => startEdit(index)}
+                        >
                           <FaEdit />
                         </button>
                         <button
                           className="p-2 text-gray-500 hover:text-red-500"
-                          onClick={() => deleteTodo(todo)}>
+                          onClick={() => deleteTodo(todo)}
+                        >
                           <FaTrash />
                         </button>
                       </div>
@@ -289,12 +298,12 @@ export default function MainPage() {
                     <p className="whitespace-pre-line flex items-start gap-2">
                       <Image
                         src={getCatImage(todo.adviceCat)}
-                        alt={todo.adviceCat || '고양이'}
+                        alt={todo.adviceCat || "고양이"}
                         width={20}
                         height={20}
                         className="rounded-full flex-shrink-0 mt-1"
                       />
-                      <span>{todo.advice.replace(/^🐱 /, '')}</span>
+                      <span>{todo.advice.replace(/^🐱 /, "")}</span>
                     </p>
                   </div>
                 )}
