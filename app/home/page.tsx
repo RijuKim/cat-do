@@ -73,7 +73,7 @@ const FoldableCalendar = ({
                 const allCompleted = todosForDay.every(t => t.completed);
 
                 return (
-                  <div className="absolute top-0 right-0 transform translate-x-1/4 -translate-y-1/4">
+                  <div className="absolute top-0 right-0">
                     {allCompleted ? (
                       <FaPaw className="text-green-500" size={12} />
                     ) : (
