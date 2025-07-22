@@ -5,12 +5,26 @@ const prisma = new PrismaClient();
 
 export const POST = async req => {
   const requestBody = await req.json();
-  const {todo, todos, catName, action, date} = requestBody;
+  const {todo, todos, catName, action, date, userId} = requestBody;
 
   // 1. DB에서 오늘의 조언 확인
   if (action === 'CHECK_PROCRASTINATION') {
+    // userId가 없으면 에러 반환
+    if (!userId) {
+      return Response.json(
+        {error: 'User authentication required'},
+        {status: 401},
+      );
+    }
+
     const existingAdvice = await prisma.procrastinationAdvice.findUnique({
-      where: {date_catName: {date, catName}},
+      where: {
+        date_catName_userId: {
+          date,
+          catName,
+          userId: userId,
+        },
+      },
     });
     if (existingAdvice) {
       return Response.json({message: existingAdvice.message});
@@ -104,13 +118,28 @@ export const POST = async req => {
 
     // 3. 생성된 조언을 DB에 저장
     if (action === 'CHECK_PROCRASTINATION' || action === 'SUMMARIZE') {
+      // userId가 없으면 저장하지 않음
+      if (!userId) {
+        return Response.json(
+          {error: 'User authentication required'},
+          {status: 401},
+        );
+      }
+
       await prisma.procrastinationAdvice.upsert({
-        where: {date_catName: {date, catName}},
+        where: {
+          date_catName_userId: {
+            date,
+            catName,
+            userId: userId,
+          },
+        },
         update: {message},
         create: {
           date,
           catName,
           message,
+          userId: userId,
         },
       });
     }

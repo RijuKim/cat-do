@@ -27,6 +27,7 @@ export default function useTodos(
   const [editText, setEditText] = useState('');
 
   const selectedKey = date.toLocaleDateString('sv-SE');
+  const displayDate = `${date.getFullYear()}년 ${(date.getMonth() + 1).toString().padStart(2, '0')}월 ${date.getDate().toString().padStart(2, '0')}일`;
 
   // 날짜가 바뀌면 완료 조언 초기화
   useEffect(() => {
@@ -127,6 +128,7 @@ export default function useTodos(
           catName: selectedCat,
           action: 'SUMMARIZE',
           date: selectedKey,
+          userId: session?.user?.id || null,
         }),
       });
 

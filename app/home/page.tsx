@@ -48,7 +48,7 @@ const FoldableCalendar = ({
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="w-full flex justify-between items-center p-3 bg-gray-100 hover:bg-gray-200 rounded-lg transition">
-        <span className="font-semibold text-gray-700">📅 캘린더 보기</span>
+        <span className="font-semibold text-gray-700">📅 My Calendar</span>
         {isOpen ? (
           <FaChevronUp className="text-gray-500" />
         ) : (
@@ -113,7 +113,7 @@ export default function MainPage() {
     [],
   );
 
-  const { data: session } = useSession();
+  const {data: session} = useSession();
 
   const {
     mounted,
@@ -158,7 +158,7 @@ export default function MainPage() {
         <header className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-2">
             <FaCat className="text-[#173f6d]" />
-            캣두
+            CAT DO
           </h1>
           <div className="flex gap-4 items-center">
             <button

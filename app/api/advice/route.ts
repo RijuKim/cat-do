@@ -1,10 +1,18 @@
 // app/api/advice/route.ts
 import {PrismaClient} from '@prisma/client';
 import {NextResponse} from 'next/server';
+import {getServerSession} from 'next-auth';
+import {authOptions} from '@/pages/api/auth/[...nextauth]';
 
 const prisma = new PrismaClient();
 
 export async function GET(req: Request) {
+  const session = await getServerSession(authOptions);
+
+  if (!session?.user?.id) {
+    return NextResponse.json({error: 'Unauthorized'}, {status: 401});
+  }
+
   const {searchParams} = new URL(req.url);
   const date = searchParams.get('date');
   const catName = searchParams.get('catName');
@@ -19,9 +27,10 @@ export async function GET(req: Request) {
   try {
     const advice = await prisma.procrastinationAdvice.findUnique({
       where: {
-        date_catName: {
+        date_catName_userId: {
           date,
           catName,
+          userId: session.user.id,
         },
       },
     });
