@@ -1,47 +1,49 @@
-import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/pages/api/auth/[...nextauth]";
+import {NextResponse} from 'next/server';
+import {prisma} from '@/lib/prisma';
+import {getServerSession} from 'next-auth/next';
+import {authOptions} from '@/pages/api/auth/[...nextauth]';
 
 export async function GET() {
-  const session = await getServerSession(authOptions);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const session = await getServerSession(authOptions as any);
 
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  if (!(session as any)?.user?.id) {
+    return NextResponse.json({error: 'Unauthorized'}, {status: 401});
   }
 
   try {
     const todos = await prisma.todo.findMany({
-      where: { userId: session.user.id }, // ✅ 본인 것만!
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      where: {userId: (session as any).user.id}, // ✅ 본인 것만!
       orderBy: {
-        createdAt: "asc",
+        createdAt: 'asc',
       },
     });
 
     return NextResponse.json(todos);
   } catch (error) {
-    console.error("Failed to fetch todos:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch todos" },
-      { status: 500 }
-    );
+    console.error('Failed to fetch todos:', error);
+    return NextResponse.json({error: 'Failed to fetch todos'}, {status: 500});
   }
 }
 
 export async function POST(request: Request) {
-  const session = await getServerSession(authOptions);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const session = await getServerSession(authOptions as any);
 
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  if (!(session as any)?.user?.id) {
+    return NextResponse.json({error: 'Unauthorized'}, {status: 401});
   }
 
   try {
-    const { text, date } = await request.json();
+    const {text, date} = await request.json();
 
     if (!text || !date) {
       return NextResponse.json(
-        { error: "Text and date are required" },
-        { status: 400 }
+        {error: 'Text and date are required'},
+        {status: 400},
       );
     }
 
@@ -50,19 +52,17 @@ export async function POST(request: Request) {
         text,
         date,
         completed: false,
-        advice: "",
-        celebration: "",
-        adviceCat: "",
-        userId: session.user.id, // ✅ 반드시 사용자 ID 저장!
+        advice: '',
+        celebration: '',
+        adviceCat: '',
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        userId: (session as any).user.id,
       },
     });
 
-    return NextResponse.json(newTodo, { status: 201 });
+    return NextResponse.json(newTodo, {status: 201});
   } catch (error) {
-    console.error("Failed to create todo:", error);
-    return NextResponse.json(
-      { error: "Failed to create todo" },
-      { status: 500 }
-    );
+    console.error('Failed to create todo:', error);
+    return NextResponse.json({error: 'Failed to create todo'}, {status: 500});
   }
 }
