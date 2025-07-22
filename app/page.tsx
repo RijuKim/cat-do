@@ -9,8 +9,12 @@ export default function HomePage() {
   const {data: session} = useSession();
   const router = useRouter();
 
-  const handleLogin = () => {
+  const handleKakaoLogin = () => {
     signIn('kakao');
+  };
+
+  const handleGoogleLogin = () => {
+    signIn('google');
   };
 
   useEffect(() => {
@@ -19,5 +23,10 @@ export default function HomePage() {
     }
   }, [session, router]);
 
-  return <SplashScreen onLogin={handleLogin} />;
+  return (
+    <SplashScreen
+      onKakaoLogin={handleKakaoLogin}
+      onGoogleLogin={handleGoogleLogin}
+    />
+  );
 }

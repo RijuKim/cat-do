@@ -141,7 +141,13 @@ export default function useTodos(
     } else {
       setMessage('🐱 할 일이 남아있군! 힘내라냥! 🔥');
     }
-  }, [selectedKey, selectedCat, todosByDate, completionAdvice]);
+  }, [
+    selectedKey,
+    selectedCat,
+    todosByDate,
+    completionAdvice,
+    session?.user?.id,
+  ]);
 
   useEffect(() => {
     if (mounted) {
@@ -171,14 +177,11 @@ export default function useTodos(
 
   const toggleComplete = async (todo: Todo) => {
     const completed = !todo.completed;
-    const celebration = completed
-      ? `🐱 "${todo.text}" 완료! 집사 최고! 🐾`
-      : '';
 
     const res = await fetch(`/api/todos/${todo.id}`, {
       method: 'PUT',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({completed, celebration}),
+      body: JSON.stringify({completed}),
     });
 
     const updatedTodo: Todo = await res.json();
@@ -280,6 +283,36 @@ export default function useTodos(
     setEditText('');
   };
 
+  const exportToGoogleCalendar = async (todo: Todo) => {
+    try {
+      setMessage('📝 Google Tasks로 내보내는 중...');
+
+      const res = await fetch('/api/calendar/export', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          todoId: todo.id,
+          date: selectedKey,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        setMessage(`✅ ${data.message}`);
+        // 성공 메시지를 잠시 후 초기화
+        setTimeout(() => {
+          getProcrastinationAdvice();
+        }, 3000);
+      } else {
+        setMessage(`❌ ${data.error}`);
+      }
+    } catch (error) {
+      console.error('Export error:', error);
+      setMessage('❌ Google Tasks 내보내기에 실패했습니다.');
+    }
+  };
+
   return {
     mounted,
     todosByDate,
@@ -299,5 +332,6 @@ export default function useTodos(
     getProcrastinationAdvice,
     startEdit,
     saveEdit,
+    exportToGoogleCalendar,
   };
 }

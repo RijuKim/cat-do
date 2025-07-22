@@ -1,15 +1,17 @@
 // app/api/advice/route.ts
 import {PrismaClient} from '@prisma/client';
 import {NextResponse} from 'next/server';
-import {getServerSession} from 'next-auth';
+import {getServerSession} from 'next-auth/next';
 import {authOptions} from '@/pages/api/auth/[...nextauth]';
 
 const prisma = new PrismaClient();
 
 export async function GET(req: Request) {
-  const session = await getServerSession(authOptions);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const session = await getServerSession(authOptions as any);
 
-  if (!session?.user?.id) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  if (!(session as any)?.user?.id) {
     return NextResponse.json({error: 'Unauthorized'}, {status: 401});
   }
 
@@ -30,7 +32,8 @@ export async function GET(req: Request) {
         date_catName_userId: {
           date,
           catName,
-          userId: session.user.id,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          userId: (session as any).user.id,
         },
       },
     });

@@ -85,6 +85,10 @@ NEXTAUTH_URL="http://localhost:3000"
 KAKAO_CLIENT_ID="your-kakao-client-id"
 KAKAO_CLIENT_SECRET="your-kakao-client-secret"
 
+# Google OAuth (Google Tasks 연동용)
+GOOGLE_CLIENT_ID="your-google-client-id"
+GOOGLE_CLIENT_SECRET="your-google-client-secret"
+
 # OpenAI
 OPENAI_API_KEY="your-openai-api-key"
 ```
@@ -143,7 +147,8 @@ cat-do/
 3. **오늘의 할일 추가**
 4. **할일 완료시 체크** ✅
 5. **AI 조언 받기** 💡 - 전구 아이콘 클릭
-6. **일일 요약 확인** - 모든 할일 완료시 자동 생성
+6. **Google Tasks로 내보내기** 📅 - 캘린더 아이콘 클릭
+7. **일일 요약 확인** - 모든 할일 완료시 자동 생성
 
 ## 🔧 개발 가이드
 
