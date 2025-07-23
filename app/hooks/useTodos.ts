@@ -74,6 +74,11 @@ export default function useTodos(
       return acc;
     }, {});
 
+    // 각 날짜별로 완료되지 않은 할일을 먼저 보여주도록 정렬
+    Object.keys(grouped).forEach(date => {
+      grouped[date].sort((a, b) => Number(a.completed) - Number(b.completed));
+    });
+
     setTodosByDate(grouped);
   }, [session]);
 
@@ -166,9 +171,13 @@ export default function useTodos(
 
     const newTodo: Todo = await res.json();
 
+    const newTodos = [...(todosByDate[selectedKey] || []), newTodo];
+    // 완료되지 않은 할일을 먼저 보여주도록 정렬
+    newTodos.sort((a, b) => Number(a.completed) - Number(b.completed));
+
     const updated = {
       ...todosByDate,
-      [selectedKey]: [...(todosByDate[selectedKey] || []), newTodo],
+      [selectedKey]: newTodos,
     };
     setTodosByDate(updated);
     setInput('');
@@ -244,6 +253,9 @@ export default function useTodos(
       t.id === todo.id ? updatedTodo : t,
     );
 
+    // 완료되지 않은 할일을 먼저 보여주도록 정렬
+    newTodos.sort((a, b) => Number(a.completed) - Number(b.completed));
+
     setTodosByDate({
       ...todosByDate,
       [selectedKey]: newTodos,
@@ -273,6 +285,9 @@ export default function useTodos(
 
     const newTodos = [...(todosByDate[selectedKey] || [])];
     newTodos[editIndex] = updatedTodo;
+
+    // 완료되지 않은 할일을 먼저 보여주도록 정렬
+    newTodos.sort((a, b) => Number(a.completed) - Number(b.completed));
 
     setTodosByDate({
       ...todosByDate,
