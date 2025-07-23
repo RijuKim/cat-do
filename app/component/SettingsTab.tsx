@@ -120,7 +120,7 @@ const SettingsTab: React.FC<SettingsTabProps> = ({
   };
 
   return (
-    <div className="p-4 max-w-md mx-auto space-y-6">
+    <div className="p-4 max-w-md mx-auto space-y-6 pb-24">
       {/* 제목 */}
       <div className="text-center">
         <h2 className="text-2xl font-bold text-gray-800 mb-2">⚙️ Settings</h2>
@@ -288,7 +288,7 @@ const SettingsTab: React.FC<SettingsTabProps> = ({
               type="checkbox"
               checked={includeCompleted}
               onChange={e => setIncludeCompleted(e.target.checked)}
-              className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+              className="settings-checkbox"
             />
             <div>
               <span className="text-sm font-medium text-gray-800">
@@ -365,8 +365,8 @@ const SettingsTab: React.FC<SettingsTabProps> = ({
           👋 계정 관리
         </h3>
         <button
-          onClick={() => signOut()}
-          className="w-full bg-gray-200 text-white py-3 px-4 rounded-lg font-medium hover:bg-red-600 transition-colors">
+          onClick={() => signOut({callbackUrl: '/'})}
+          className="w-full bg-gray-200 text-white py-3 px-4 rounded-lg font-medium hover:bg-gray-500 transition-colors">
           로그아웃
         </button>
       </div>

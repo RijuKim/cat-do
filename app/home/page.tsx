@@ -34,44 +34,85 @@ const FullCalendar = ({
   setDate,
   todosByDate,
   mounted,
+  onDateClick,
 }: {
   date: Date;
   setDate: (date: Date) => void;
   todosByDate: Record<string, Todo[]>;
   mounted: boolean;
+  onDateClick?: (date: Date) => void;
 }) => {
   return (
     <div className="transition-all duration-300">
       {mounted && (
-        <div className="bg-white rounded-lg shadow-lg p-4">
+        <div>
           <Calendar
-            onChange={value => setDate(value as Date)}
+            onChange={value => {
+              const newDate = value as Date;
+              setDate(newDate);
+              if (onDateClick) {
+                onDateClick(newDate);
+              }
+            }}
             value={date}
             locale="ko-KR"
-            className="mx-auto border-none"
+            className="w-full border-none calendar-large mx-auto"
             formatShortWeekday={(locale, date) => {
               const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
               return weekdays[date.getDay()];
             }}
             formatDay={(locale, date) => date.getDate().toString()}
+            tileClassName="calendar-tile"
+            navigationLabel={({date}) =>
+              `${date.getFullYear()}년 ${date.getMonth() + 1}월`
+            }
+            navigationAriaLabel="월 선택"
+            onClickMonth={() => {}} // 월 클릭 비활성화
+            onClickYear={() => {}} // 년 클릭 비활성화
             tileContent={({date, view}) => {
               if (view === 'month') {
                 const key = date.toLocaleDateString('sv-SE');
                 const todosForDay = todosByDate[key] || [];
-                const count = todosForDay.length;
-                if (count === 0) return null;
+                if (todosForDay.length === 0) return null;
 
                 const allCompleted = todosForDay.every(t => t.completed);
 
                 return (
-                  <div className="absolute top-0 right-0">
-                    {allCompleted ? (
-                      <FaPaw className="text-green-500" size={12} />
-                    ) : (
-                      <div className="w-4 h-4 flex items-center justify-center bg-orange-400 text-white text-xs rounded-full font-bold">
-                        {count}
-                      </div>
-                    )}
+                  <div className="w-full h-full relative">
+                    {/* 우상단 상태 표시 */}
+                    <div className="absolute top-0 right-0 z-10">
+                      {allCompleted && (
+                        <FaPaw className="text-green-500" size={14} />
+                      )}
+                    </div>
+
+                    {/* 할 일 목록 간략 표시 - 스크롤 가능한 영역 */}
+                    <div
+                      className="mt-2 space-y-1 scrollbar-hide"
+                      style={{
+                        height: 'auto',
+                        maxHeight: 'none',
+                        overflowY: 'visible',
+                      }}>
+                      {todosForDay.map(todo => (
+                        <div
+                          key={todo.id}
+                          className={`px-1 py-0.5 rounded text-xs leading-tight flex-shrink-0 whitespace-nowrap overflow-hidden calendar-todo-item ${
+                            todo.completed
+                              ? 'bg-green-100 text-green-700'
+                              : 'bg-blue-100 text-blue-700'
+                          }`}
+                          title={todo.text} // 호버시 전체 내용 보기
+                          style={{
+                            textOverflow: 'ellipsis',
+                            lineHeight: '1.2',
+                            minWidth: 0,
+                            width: '100%',
+                          }}>
+                          {todo.text}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 );
               }
@@ -156,22 +197,28 @@ export default function MainPage() {
         );
       case 'calendar':
         return (
-          <div className="p-4 max-w-md mx-auto">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4 text-center">
+          <div className="px-2 py-2 pb-24 flex flex-col items-center justify-center min-h-screen">
+            <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
               📅 Calendar
             </h2>
-            <FullCalendar
-              date={date}
-              setDate={setDate}
-              todosByDate={todosByDate}
-              mounted={mounted}
-            />
+            <div className="w-full flex justify-center overflow-hidden">
+              <FullCalendar
+                date={date}
+                setDate={setDate}
+                todosByDate={todosByDate}
+                mounted={mounted}
+                onDateClick={(clickedDate: Date) => {
+                  setDate(clickedDate);
+                  setActiveTab('home');
+                }}
+              />
+            </div>
           </div>
         );
       case 'home':
       default:
         return (
-          <div className="max-w-2xl mx-auto p-4 sm:p-6 pb-20">
+          <div className="max-w-2xl mx-auto p-4 sm:p-6 pb-24">
             <header className="flex justify-between items-center mb-8">
               <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-2">
                 <FaCat className="text-[#173f6d]" />
@@ -195,7 +242,7 @@ export default function MainPage() {
               </div>
             </header>
 
-            <div className="bg-white rounded-xl shadow-lg p-6">
+            <div className="px-2 py-4">
               <h2 className="text-xl font-bold text-gray-800 mb-4">
                 {selectedKey}
               </h2>
@@ -206,19 +253,19 @@ export default function MainPage() {
                 </div>
               )}
 
-              <div className="flex gap-2 mb-6">
+              <div className="relative mb-6">
                 <input
                   type="text"
                   value={input}
                   onChange={e => setInput(e.target.value)}
                   onKeyPress={e => e.key === 'Enter' && handleAddTodo()}
                   placeholder="새로운 할 일을 입력하세요..."
-                  className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="todo-input w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none"
                 />
                 <button
                   onClick={handleAddTodo}
-                  className="bg-green-400 text-white px-6 py-3 rounded-lg hover:bg-green-500 transition flex items-center gap-2">
-                  <FaPlus />
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-300 p-2 hover:text-gray-400 transition flex items-center justify-center">
+                  <FaPlus className="w-4 h-4" />
                 </button>
               </div>
 
@@ -232,7 +279,7 @@ export default function MainPage() {
                             type="checkbox"
                             checked={todo.completed}
                             onChange={() => toggleComplete(todo)}
-                            className="w-5 h-5"
+                            className="todo-checkbox"
                           />
 
                           {editIndex === index ? (
@@ -241,7 +288,7 @@ export default function MainPage() {
                               value={editText}
                               onChange={e => setEditText(e.target.value)}
                               onKeyPress={e => e.key === 'Enter' && saveEdit()}
-                              className="flex-1 px-2 py-1 border rounded"
+                              className="todo-input flex-1 px-2 py-1 border rounded"
                               autoFocus
                             />
                           ) : (
@@ -280,16 +327,14 @@ export default function MainPage() {
                                 onClick={() => startEdit(index)}>
                                 <FaEdit />
                               </button>
-                              {!todo.completed && (
-                                <button
-                                  className="p-2 text-gray-300 hover:text-gray-400"
-                                  onClick={() => {
-                                    if (!todo.advice) getAdvice(todo);
-                                    toggleAdvice(todo.id);
-                                  }}>
-                                  <FaLightbulb />
-                                </button>
-                              )}
+                              <button
+                                className="p-2 text-gray-300 hover:text-gray-400"
+                                onClick={() => {
+                                  if (!todo.advice) getAdvice(todo);
+                                  toggleAdvice(todo.id);
+                                }}>
+                                <FaLightbulb />
+                              </button>
 
                               <button
                                 className="p-2 text-gray-300 hover:text-gray-400"
