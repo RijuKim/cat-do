@@ -43,12 +43,12 @@ const FullCalendar = ({
   return (
     <div className="transition-all duration-300">
       {mounted && (
-        <div className="bg-white rounded-lg shadow-lg p-4">
+        <div>
           <Calendar
             onChange={value => setDate(value as Date)}
             value={date}
             locale="ko-KR"
-            className="mx-auto border-none"
+            className="w-full border-none"
             formatShortWeekday={(locale, date) => {
               const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
               return weekdays[date.getDay()];
@@ -156,7 +156,7 @@ export default function MainPage() {
         );
       case 'calendar':
         return (
-          <div className="p-4 max-w-md mx-auto">
+          <div className="p-2 max-w-md mx-auto">
             <h2 className="text-2xl font-bold text-gray-800 mb-4 text-center">
               📅 Calendar
             </h2>
@@ -195,7 +195,7 @@ export default function MainPage() {
               </div>
             </header>
 
-            <div className="bg-white rounded-xl shadow-lg p-6">
+            <div className="px-2 py-4">
               <h2 className="text-xl font-bold text-gray-800 mb-4">
                 {selectedKey}
               </h2>
@@ -206,19 +206,19 @@ export default function MainPage() {
                 </div>
               )}
 
-              <div className="flex gap-2 mb-6">
+              <div className="relative mb-6">
                 <input
                   type="text"
                   value={input}
                   onChange={e => setInput(e.target.value)}
                   onKeyPress={e => e.key === 'Enter' && handleAddTodo()}
                   placeholder="새로운 할 일을 입력하세요..."
-                  className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
                 <button
                   onClick={handleAddTodo}
-                  className="bg-green-400 text-white px-6 py-3 rounded-lg hover:bg-green-500 transition flex items-center gap-2">
-                  <FaPlus />
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-300 p-2 hover:text-gray-400 transition flex items-center justify-center">
+                  <FaPlus className="w-4 h-4" />
                 </button>
               </div>
 
