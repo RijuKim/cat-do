@@ -140,17 +140,17 @@ const SettingsTab: React.FC<SettingsTabProps> = ({
           {[
             {
               name: '두두',
-              personality: '새침한 츤데레',
+              personality: '츤데레 치즈냥',
               img: '/assets/dodo.png',
             },
             {
               name: '코코',
-              personality: '다정한 개냥이',
+              personality: '우아하고 느긋한 완벽주의냥',
               img: '/assets/coco.png',
             },
             {
               name: '깜냥',
-              personality: '불친절한 고양이',
+              personality: '솔직하고 귀찮음이 많은냥',
               img: '/assets/kkamnyang.png',
             },
           ].map(cat => (
@@ -175,7 +175,9 @@ const SettingsTab: React.FC<SettingsTabProps> = ({
                 <p className="font-semibold text-sm text-gray-800">
                   {cat.name}
                 </p>
-                <p className="text-xs text-gray-500">{cat.personality}</p>
+                <p className="text-xs text-gray-500 font-medium">
+                  {cat.personality}
+                </p>
               </div>
             </div>
           ))}
