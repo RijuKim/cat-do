@@ -64,28 +64,41 @@ export default function useTodos(
   const fetchTodos = useCallback(async () => {
     if (!session) return;
 
-    const res = await fetch('/api/todos');
-    const todos: Todo[] = await res.json();
+    try {
+      const res = await fetch('/api/todos');
+      if (!res.ok) return;
 
-    const grouped = todos.reduce<Record<string, Todo[]>>((acc, todo) => {
-      const key = todo.date;
-      if (!acc[key]) acc[key] = [];
-      acc[key].push(todo);
-      return acc;
-    }, {});
+      const todos: Todo[] = await res.json();
 
-    // 각 날짜별로 완료되지 않은 할일을 먼저 보여주도록 정렬
-    Object.keys(grouped).forEach(date => {
-      grouped[date].sort((a, b) => Number(a.completed) - Number(b.completed));
-    });
+      const grouped = todos.reduce<Record<string, Todo[]>>((acc, todo) => {
+        const key = todo.date;
+        if (!acc[key]) acc[key] = [];
+        acc[key].push(todo);
+        return acc;
+      }, {});
 
-    setTodosByDate(grouped);
+      // 각 날짜별로 완료되지 않은 할일을 먼저 보여주도록 정렬
+      Object.keys(grouped).forEach(date => {
+        grouped[date].sort((a, b) => Number(a.completed) - Number(b.completed));
+      });
+
+      setTodosByDate(grouped);
+    } catch (error) {
+      console.error('할일 로드 오류:', error);
+    }
   }, [session]);
 
+  // 마운트 시 한 번만 실행
   useEffect(() => {
     setMounted(true);
-    fetchTodos();
-  }, [fetchTodos]);
+  }, []);
+
+  // 세션이 로드되면 할일 가져오기
+  useEffect(() => {
+    if (mounted && session) {
+      fetchTodos();
+    }
+  }, [mounted, session, fetchTodos]);
 
   const getProcrastinationAdvice = useCallback(async () => {
     const todosForAdvice = todosByDate[selectedKey] || [];
@@ -93,58 +106,79 @@ export default function useTodos(
     const hasTodos = todosForAdvice.length > 0;
 
     if (!hasTodos) {
+      // 각 고양이의 성격에 맞는 메시지
+      const emptyMessages = {
+        두두: '🐱 할 일이 없다니... 그래도 집사라면 뭔가 할 일을 만들어야 하지 않겠냥?',
+        코코: '🐱 할 일이 없네~ 그래도 괜찮아, 마음 편하게 쉬어도 돼, 야옹~',
+        깜냥: '🐱 할 일이 없다니? 빈둥거리지마라냥!',
+      };
+
       setMessage(
-        '안녕하냥, 집사! 🐾 오늘 할 일이 아직 없다니, 조금 심심하겠는걸?(=｀ω´=) 그래도 오늘을 알차게 보내려면, 해야 할 일 리스트를 작성하는 게 좋겠다냥! 📝',
+        emptyMessages[selectedCat as keyof typeof emptyMessages] ||
+          emptyMessages['두두'],
       );
       return;
     }
 
     if (allCompleted) {
+      // 완료 조언이 이미 있으면 재사용
       if (completionAdvice) {
         setMessage(completionAdvice);
         return;
       }
 
-      // 완료된 할 일 요약
-      setMessage('🐱 냐...');
-
       // DB에서 요약 먼저 확인
-      const adviceRes = await fetch(
-        `/api/advice?date=${selectedKey}&catName=${selectedCat}`,
-      );
+      try {
+        const adviceRes = await fetch(
+          `/api/advice?date=${selectedKey}&catName=${selectedCat}`,
+        );
 
-      if (adviceRes.ok) {
-        const savedAdvice = await adviceRes.json();
-        if (savedAdvice) {
-          setMessage(savedAdvice.message);
-          setCompletionAdvice(savedAdvice.message); // 조언 저장
-          return;
+        if (adviceRes.ok) {
+          const savedAdvice = await adviceRes.json();
+          if (savedAdvice) {
+            setMessage(savedAdvice.message);
+            setCompletionAdvice(savedAdvice.message);
+            return;
+          }
         }
-      }
 
-      // 없으면 새로 생성
-      setMessage('🐱 열심히 생각 중...');
-      const generateRes = await fetch('/api/assistant', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({
-          todos: todosForAdvice,
-          catName: selectedCat,
-          action: 'SUMMARIZE',
-          date: selectedKey,
-          userId: session?.user?.id || null,
-        }),
-      });
+        // 없으면 새로 생성 (로딩 메시지 표시)
+        setMessage('🐱 열심히 생각 중...');
+        const generateRes = await fetch('/api/assistant', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            todos: todosForAdvice,
+            catName: selectedCat,
+            action: 'SUMMARIZE',
+            date: selectedKey,
+            userId: session?.user?.id || null,
+          }),
+        });
 
-      const data = await generateRes.json();
-      if (generateRes.ok) {
-        setMessage(data.message);
-        setCompletionAdvice(data.message);
-      } else {
-        setMessage('미안, 지금은 조언을 해줄 수 없어.');
+        const data = await generateRes.json();
+        if (generateRes.ok) {
+          setMessage(data.message);
+          setCompletionAdvice(data.message);
+        } else {
+          setMessage('미안, 지금은 조언을 해줄 수 없어.');
+        }
+      } catch (error) {
+        console.error('조언 생성 오류:', error);
+        setMessage('🐱 할 일이 남아있군! 힘내라냥! 🔥');
       }
     } else {
-      setMessage('🐱 할 일이 남아있군! 힘내라냥! 🔥');
+      // 각 고양이의 성격에 맞는 메시지
+      const catMessages = {
+        두두: '🐱 흥, 할 일이 남아있군... 그래도 집사라면 해낼 수 있을 거라냥.',
+        코코: '🐱 할 일이 있지만~ 하루는 기니까, 마음을 편하게 가져, 야옹~',
+        깜냥: '🐱 할 일이 남아있는데 뭐하고 있는 거야? 내 밥을 사주려면 빨리 해라냥!',
+      };
+
+      setMessage(
+        catMessages[selectedCat as keyof typeof catMessages] ||
+          catMessages['두두'],
+      );
     }
   }, [
     selectedKey,
@@ -154,11 +188,19 @@ export default function useTodos(
     session?.user?.id,
   ]);
 
+  // 조언 생성 최적화: 필요한 경우에만 호출
   useEffect(() => {
-    if (mounted) {
+    if (mounted && todosByDate[selectedKey]) {
+      // 할일 상태가 변경될 때마다 조언 생성
       getProcrastinationAdvice();
     }
-  }, [mounted, getProcrastinationAdvice, todosByDate]); // todosByDate 변경 시 다시 호출
+  }, [
+    mounted,
+    selectedKey,
+    selectedCat,
+    todosByDate,
+    getProcrastinationAdvice,
+  ]);
 
   const addTodo = async () => {
     if (!input.trim()) return;

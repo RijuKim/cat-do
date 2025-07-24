@@ -1,6 +1,6 @@
 'use client';
 
-import {useState, useMemo} from 'react';
+import React, {useState, useMemo} from 'react';
 import {useSession} from 'next-auth/react';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
@@ -16,7 +16,6 @@ import {
 } from 'react-icons/fa';
 
 import useTodos from '../hooks/useTodos';
-import CatSelectorModal from '../component/CatSelectorModal';
 import TabNavigation from '../component/TabNavigation';
 import SettingsTab from '../component/SettingsTab';
 
@@ -128,26 +127,124 @@ const FullCalendar = ({
 export default function MainPage() {
   const [date, setDate] = useState(new Date());
   const [selectedCat, setSelectedCat] = useState('두두');
-  const [showCatModal, setShowCatModal] = useState(false);
   const [visibleAdviceIds, setVisibleAdviceIds] = useState<string[]>([]);
+  const [isLoadingCat, setIsLoadingCat] = useState(true);
   const [activeTab, setActiveTab] = useState<'home' | 'calendar' | 'settings'>(
     'home',
   );
 
   const cats = useMemo(
     () => [
-      {name: '두두', personality: '새침한 츤데레', img: '/assets/dodo.png'},
-      {name: '코코', personality: '다정한 개냥이', img: '/assets/coco.png'},
+      {
+        name: '두두',
+        personality: '츤데레 치즈냥이',
+        description: '새침하지만 집사를 응원해주는',
+        img: '/assets/dodo.png',
+      },
+      {
+        name: '코코',
+        personality: '우아한 완벽주의',
+        description: '고상하고 절제된 흰색 고양이',
+        img: '/assets/coco.png',
+      },
       {
         name: '깜냥',
-        personality: '불친절한 고양이',
+        personality: '직설적인 고양이',
+        description: '솔직하고 불친절하지만 정확한',
         img: '/assets/kkamnyang.png',
       },
     ],
     [],
   );
 
+  // 고양이 픽셀아트 이미지 경로 메모이제이션
+  const catPixelImage = useMemo(() => {
+    const imageMap = {
+      두두: '/assets/dodo_pixel.png',
+      코코: '/assets/coco_pixel.png',
+      깜냥: '/assets/kkamnyang_pixel.png',
+    };
+    return imageMap[selectedCat as keyof typeof imageMap] || imageMap['두두'];
+  }, [selectedCat]);
+
   const {data: session} = useSession();
+
+  // 선택된 고양이 로드 (한 번만 실행)
+  const loadSelectedCat = React.useCallback(async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if (!(session?.user as any)?.id) return;
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    console.log('고양이 선택 로드 시작:', (session?.user as any)?.id);
+
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const response = await fetch(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        `/api/user/selected-cat?userId=${(session?.user as any)?.id}`,
+      );
+      if (response.ok) {
+        const data = await response.json();
+        console.log('로드된 고양이 선택:', data);
+        setSelectedCat(data.selectedCat);
+      } else {
+        console.error('고양이 선택 로드 실패:', response.status);
+      }
+    } catch (error) {
+      console.error('고양이 선택 로드 오류:', error);
+    } finally {
+      setIsLoadingCat(false);
+    }
+  }, [session?.user]);
+
+  // 선택된 고양이 저장 (디바운싱 적용)
+  const saveSelectedCat = React.useCallback(
+    async (catName: string) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      if (!(session?.user as any)?.id) return;
+
+      console.log('고양이 선택 저장 시작:', catName);
+
+      try {
+        const response = await fetch('/api/user/selected-cat', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            userId: (session?.user as any)?.id,
+            selectedCat: catName,
+          }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          console.log('저장된 고양이 선택:', data);
+          setSelectedCat(catName);
+        } else {
+          console.error('고양이 선택 저장 실패:', response.status);
+        }
+      } catch (error) {
+        console.error('고양이 선택 저장 오류:', error);
+      }
+    },
+    [session?.user],
+  );
+
+  // 세션이 로드되면 고양이 선택 로드 (한 번만)
+  React.useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if ((session?.user as any)?.id && isLoadingCat) {
+      loadSelectedCat();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } else if (!(session?.user as any)?.id) {
+      setIsLoadingCat(false);
+    }
+  }, [session?.user, loadSelectedCat, isLoadingCat]);
 
   const {
     mounted,
@@ -167,12 +264,7 @@ export default function MainPage() {
     startEdit,
     saveEdit,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } = useTodos(date, selectedCat, session as any);
-
-  const selectedCatInfo = useMemo(
-    () => cats.find(c => c.name === selectedCat) || cats[0],
-    [cats, selectedCat],
-  );
+  } = useTodos(date, isLoadingCat ? '두두' : selectedCat, session as any);
 
   const handleAddTodo = () => {
     if (input.trim()) addTodo();
@@ -193,7 +285,10 @@ export default function MainPage() {
     switch (activeTab) {
       case 'settings':
         return (
-          <SettingsTab selectedCat={selectedCat} onCatChange={setSelectedCat} />
+          <SettingsTab
+            selectedCat={selectedCat}
+            onCatChange={saveSelectedCat}
+          />
         );
       case 'calendar':
         return (
@@ -219,37 +314,83 @@ export default function MainPage() {
       default:
         return (
           <div className="max-w-2xl mx-auto p-4 sm:p-6 pb-24">
-            <header className="flex justify-between items-center mb-8">
+            <header className="flex justify-between items-center mb-4">
               <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-2">
                 <FaCat className="text-[#173f6d]" />
                 CAT DO
               </h1>
-              <div className="flex items-center">
-                <button
-                  className="flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow-md hover:shadow-lg transition-shadow"
-                  onClick={() => setShowCatModal(true)}>
-                  <Image
-                    src={selectedCatInfo.img}
-                    alt={selectedCatInfo.name}
-                    width={28}
-                    height={28}
-                    className="rounded-full"
-                  />
-                  <span className="font-semibold text-gray-700">
-                    {selectedCatInfo.name}
-                  </span>
-                </button>
-              </div>
+              <h2 className="text-xl font-bold text-gray-800">{selectedKey}</h2>
             </header>
-
-            <div className="px-2 py-4">
-              <h2 className="text-xl font-bold text-gray-800 mb-4">
-                {selectedKey}
-              </h2>
-
-              {message && (
-                <div className="bg-orange-50 border-l-4 border-orange-300 text-orange-800 p-4 mb-6 rounded-r-lg">
+            {isLoadingCat && (
+              <div className="text-center mb-4">
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-gray-100 text-gray-600 text-sm rounded-full">
+                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse"></div>
+                  <span>고양이를 불러오는 중...</span>
+                </div>
+              </div>
+            )}
+            <div className="px-2">
+              <div className="flex justify-center mb-6">
+                {isLoadingCat ? (
+                  <div className="w-[120px] h-[120px] bg-gray-200 rounded-lg animate-pulse flex items-center justify-center">
+                    <span className="text-gray-500">로딩중...</span>
+                  </div>
+                ) : (
+                  <Image
+                    src={catPixelImage}
+                    alt={`${selectedCat} 고양이 비서`}
+                    width={120}
+                    height={120}
+                    className="pixelated"
+                    style={{
+                      imageRendering: 'pixelated',
+                    }}
+                  />
+                )}
+              </div>
+              {message ? (
+                <div
+                  className={`p-4 mb-6 rounded-r-lg border-l-4 ${
+                    message.includes('열심히 생각 중') ||
+                    message.includes('미안, 지금은 조언을 해줄 수 없어')
+                      ? 'bg-yellow-50 border-yellow-300 text-yellow-800' // 로딩/에러 노랑
+                      : message.includes('✅') || message.includes('📝')
+                      ? 'bg-green-50 border-green-300 text-green-800' // 성공 초록
+                      : message.includes('❌')
+                      ? 'bg-red-50 border-red-300 text-red-800' // 에러 빨강
+                      : selectedCat === '두두'
+                      ? 'bg-orange-50 border-orange-300 text-orange-800' // 츤데레 오렌지
+                      : selectedCat === '코코'
+                      ? 'bg-blue-50 border-blue-300 text-blue-800' // 우아한 파랑
+                      : 'bg-gray-50 border-gray-300 text-gray-800' // 직설적 회색
+                  }`}>
                   <p className="text-sm">{message}</p>
+                </div>
+              ) : isLoadingCat ? (
+                <div className="bg-gray-50 border-l-4 border-gray-300 text-gray-700 p-4 mb-6 rounded-r-lg">
+                  <p className="text-sm font-medium">
+                    <span className="mr-2">🐱</span>
+                    고양이 비서를 불러오는 중...
+                  </p>
+                </div>
+              ) : (
+                <div
+                  className={`p-4 mb-6 rounded-r-lg border-l-4 ${
+                    selectedCat === '두두'
+                      ? 'bg-orange-50 border-orange-300 text-orange-800' // 츤데레 오렌지
+                      : selectedCat === '코코'
+                      ? 'bg-blue-50 border-blue-300 text-blue-800' // 우아한 파랑
+                      : 'bg-gray-50 border-gray-300 text-gray-800' // 직설적 회색
+                  }`}>
+                  <p className="text-sm font-medium">
+                    <span className="mr-2">🐱</span>
+                    {selectedCat === '두두' &&
+                      '흥, 할 일이 남아있군... 그래도 집사라면 해낼 수 있을 거다냥.'}
+                    {selectedCat === '코코' &&
+                      '할 일이 있지만~ 하루는 기니까, 마음을 편하게 가져, 야옹~'}
+                    {selectedCat === '깜냥' &&
+                      '뭐야! 할 일이 이렇게나 남아있는데 뭐하고 있는 거야? 빨리 해라냥!'}
+                  </p>
                 </div>
               )}
 
@@ -259,18 +400,37 @@ export default function MainPage() {
                   value={input}
                   onChange={e => setInput(e.target.value)}
                   onKeyPress={e => e.key === 'Enter' && handleAddTodo()}
-                  placeholder="새로운 할 일을 입력하세요..."
-                  className="todo-input w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none"
+                  placeholder={'새로운 할 일을 입력하세요...'}
+                  disabled={isLoadingCat}
+                  className={`todo-input w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none ${
+                    isLoadingCat
+                      ? 'bg-gray-100 text-gray-500 cursor-not-allowed'
+                      : ''
+                  }`}
                 />
                 <button
                   onClick={handleAddTodo}
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-300 p-2 hover:text-gray-400 transition flex items-center justify-center">
+                  disabled={isLoadingCat}
+                  className={`absolute right-2 top-1/2 transform -translate-y-1/2 p-2 transition flex items-center justify-center ${
+                    isLoadingCat
+                      ? 'text-gray-400 cursor-not-allowed'
+                      : 'text-gray-300 hover:text-gray-400'
+                  }`}>
                   <FaPlus className="w-4 h-4" />
                 </button>
               </div>
 
               <ul className="space-y-3">
-                {mounted &&
+                {isLoadingCat ? (
+                  <li className="py-3">
+                    <div className="flex items-center justify-center">
+                      <div className="text-gray-500 text-sm">
+                        할 일을 불러오는 중...
+                      </div>
+                    </div>
+                  </li>
+                ) : (
+                  mounted &&
                   (todosByDate[selectedKey] || []).map((todo, index) => (
                     <li key={todo.id} className="py-3">
                       <div className="flex items-center justify-between">
@@ -363,15 +523,18 @@ export default function MainPage() {
                         </div>
                       )}
                     </li>
-                  ))}
+                  ))
+                )}
               </ul>
 
-              {mounted && (todosByDate[selectedKey] || []).length === 0 && (
-                <div className="text-center py-8 text-gray-400">
-                  <p>오늘의 할 일이 아직 없어요.</p>
-                  <p>첫 번째 할 일을 추가해 보세요!</p>
-                </div>
-              )}
+              {!isLoadingCat &&
+                mounted &&
+                (todosByDate[selectedKey] || []).length === 0 && (
+                  <div className="text-center py-8 text-gray-400">
+                    <p>오늘의 할 일이 아직 없어요.</p>
+                    <p>첫 번째 할 일을 추가해 보세요!</p>
+                  </div>
+                )}
             </div>
           </div>
         );
@@ -385,16 +548,6 @@ export default function MainPage() {
 
       {/* 하단 탭 네비게이션 */}
       <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
-
-      {/* 고양이 선택 모달 */}
-      {showCatModal && (
-        <CatSelectorModal
-          cats={cats}
-          selectedCat={selectedCat}
-          onSelectCat={setSelectedCat}
-          onClose={() => setShowCatModal(false)}
-        />
-      )}
     </div>
   );
 }

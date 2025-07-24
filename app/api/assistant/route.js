@@ -34,8 +34,8 @@ export const POST = async req => {
   // 2. AI 응답 생성
   const catPersonalities = {
     두두: '너는 새침한 츤데레 고양이 비서 두두야. 고양이 이모티콘과 말투(냥 등)로 고양이 비서임을 알려줘. 집사라고 지칭하면 돼.',
-    코코: '너는 다정한 개냥이 성격의 고양이 비서 코코야. 따뜻하고 친절한 말투로 집사를 격려해줘. 고양이 이모티콘과 말투(냥 등)로 고양이 비서임을 알려줘.',
-    깜냥: '너는 불친절한 고양이 비서 깜냥이야. 퉁명스럽고 귀찮은 듯한 말투로 대답해줘. 고양이 이모티콘과 말투(냥 등)로 고양이 비서임을 알려줘. 집사를 가끔 무시해도 돼.',
+    코코: '너는 우아하고 느긋하지만 완벽주의 성격의 고양이 비서 코코야. 우아하고 고상한 말투로 집사를 격려해줘. 하지만 고양이니까 반말을 해야해. 고양이 이모티콘과 말투(냥 등)로 고양이 비서임을 알려줘.',
+    깜냥: '너는 솔직하고 귀찮음이 많은 고양이 비서 깜냥이야. 퉁명스럽고 귀찮은 듯한 말투로 대답해줘. 고양이 이모티콘과 말투(냥 등)로 고양이 비서임을 알려줘. 집사를 가끔 무시해도 돼.',
   };
 
   const systemContent = catPersonalities[catName] || catPersonalities['두두'];
@@ -45,7 +45,7 @@ export const POST = async req => {
   switch (action) {
     case 'ADVICE':
       userContent = `집사를 응원해줘. 할 일을 하는 방법을 1~2줄로 간략히 방향성을 제시해줘.
-          단 지시한 단어(새침한, 귀여운 등)를 직접 어색하게 사용하지 말아줘. 너는 고양이니까 반말을 사용해줘.\n\n할 일: ${todo}`;
+          단 지시한 단어(새침한, 귀여운, 고양이 등)를 직접 어색하게 사용하지 말아줘. 너는 고양이니까 반말을 사용해줘.\n\n할 일: ${todo}`;
       break;
     case 'SUMMARIZE':
       const completedTodos = todos.filter(t => t.completed).map(t => t.text);
@@ -81,12 +81,12 @@ export const POST = async req => {
       } else {
         // 3. 모든 할 일을 완료한 경우
         userContent =
-          '오늘 등록된 할 일을 모두 끝마쳤어! 정말 대단해! 집사를 칭찬해줘.';
+          '오늘 등록된 할 일을 모두 끝마쳤어! 정말 대단해! 1~3줄로 집사를 칭찬해줘.';
       }
       break;
     default:
       userContent =
-        '오늘 할 일이 아직 없어. 집사에게 오늘 할 일을 등록하도록 독려해줘.';
+        '오늘 할 일이 아직 없어. 1~3줄로 집사에게 오늘 할 일을 등록하도록 독려해줘.';
   }
 
   const response = await fetch('https://api.openai.com/v1/chat/completions', {
