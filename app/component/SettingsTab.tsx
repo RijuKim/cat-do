@@ -1,9 +1,8 @@
 'use client';
 
-import React, {useState, useEffect} from 'react';
+import React, {useState} from 'react';
 import {useSession, signOut} from 'next-auth/react';
 import GoogleCalendarStatus from './GoogleCalendarStatus';
-import Image from 'next/image';
 import {
   FaDownload,
   FaSync,
@@ -12,15 +11,7 @@ import {
   FaUpload,
 } from 'react-icons/fa';
 
-interface SettingsTabProps {
-  selectedCat: string;
-  onCatChange: (cat: string) => void;
-}
-
-const SettingsTab: React.FC<SettingsTabProps> = ({
-  selectedCat,
-  onCatChange,
-}) => {
+const SettingsTab: React.FC = () => {
   const {data: session} = useSession() as {data: {accessToken?: string} | null};
   const [fetchStatus, setFetchStatus] = useState<
     'idle' | 'loading' | 'success' | 'error'
@@ -31,12 +22,6 @@ const SettingsTab: React.FC<SettingsTabProps> = ({
   >('idle');
   const [exportMessage, setExportMessage] = useState('');
   const [includeCompleted, setIncludeCompleted] = useState(false);
-  const [tempSelectedCat, setTempSelectedCat] = useState(selectedCat);
-
-  // selectedCat이 변경될 때마다 tempSelectedCat도 업데이트
-  useEffect(() => {
-    setTempSelectedCat(selectedCat);
-  }, [selectedCat]);
 
   const handleGoogleTasksFetch = async () => {
     if (!session?.accessToken) {
@@ -125,83 +110,6 @@ const SettingsTab: React.FC<SettingsTabProps> = ({
       <div className="text-center">
         <h2 className="text-2xl font-bold text-gray-800 mb-2">⚙️ Settings</h2>
         <p className="text-gray-600 text-sm">앱 설정을 관리하세요</p>
-      </div>
-
-      {/* 고양이 선택 섹션 */}
-      <div className="bg-white rounded-lg shadow-md p-4">
-        <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center">
-          🐱 고양이 선택
-        </h3>
-        <p className="text-gray-600 text-sm mb-4">
-          당신의 할일을 도와줄 고양이를 선택하세요
-        </p>
-
-        <div className="grid grid-cols-3 gap-3 mb-4">
-          {[
-            {
-              name: '두두',
-              personality: '츤데레 치즈냥',
-              img: '/assets/dodo.png',
-            },
-            {
-              name: '코코',
-              personality: '우아하고 느긋한 완벽주의냥',
-              img: '/assets/coco.png',
-            },
-            {
-              name: '깜냥',
-              personality: '솔직하고 귀찮음이 많은냥',
-              img: '/assets/kkamnyang.png',
-            },
-          ].map(cat => (
-            <div
-              key={cat.name}
-              onClick={() => setTempSelectedCat(cat.name)}
-              className={`p-3 rounded-lg cursor-pointer transition-all duration-200 text-center ${
-                tempSelectedCat === cat.name
-                  ? 'bg-orange-100 ring-2 ring-orange-300 shadow-md'
-                  : 'bg-gray-50 hover:bg-gray-100 hover:shadow-sm'
-              }`}>
-              <div className="relative w-16 h-16 mx-auto mb-2">
-                <Image
-                  src={cat.img}
-                  alt={cat.name}
-                  width={64}
-                  height={64}
-                  className="w-full h-full object-cover rounded-full"
-                />
-              </div>
-              <div>
-                <p className="font-semibold text-sm text-gray-800">
-                  {cat.name}
-                </p>
-                <p className="text-xs text-gray-500 font-medium">
-                  {cat.personality}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* 현재 선택된 고양이 표시 */}
-        <div className="mb-3 p-2 bg-gray-50 rounded-lg text-sm text-gray-600 text-center">
-          현재 선택:{' '}
-          <span className="font-semibold text-orange-600">{selectedCat}</span>
-        </div>
-
-        {/* 선택 완료 버튼 */}
-        <button
-          onClick={() => onCatChange(tempSelectedCat)}
-          disabled={tempSelectedCat === selectedCat}
-          className={`w-full py-2 px-4 rounded-lg font-medium transition-colors ${
-            tempSelectedCat === selectedCat
-              ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-              : 'bg-orange-400 text-white hover:bg-orange-500'
-          }`}>
-          {tempSelectedCat === selectedCat
-            ? '현재 선택됨'
-            : `${tempSelectedCat} 선택하기`}
-        </button>
       </div>
 
       {/* Google Tasks 연결 상태 섹션 */}
