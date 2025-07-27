@@ -40,6 +40,9 @@ model User {
   email                 String?
   name                  String?
   selectedCat           String?                 @default("두두")
+  jellyCount            Int                     @default(0)
+  lastJellyDate         String?
+  unlockedCats          String[]                @default(["두두"])
   createdAt             DateTime                @default(now())
   procrastinationAdvice ProcrastinationAdvice[]
   todos                 Todo[]

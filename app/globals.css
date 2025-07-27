@@ -1,6 +1,31 @@
 @import url('https://fonts.googleapis.com/css2?family=DotGothic16&display=swap');
 @import 'tailwindcss';
 
+/* 도트폰트 정의 - 한글 범위만 적용 */
+@font-face {
+  font-family: 'PFStardust';
+  src: url('/assets/fonts/PF스타더스트 3.0.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  unicode-range: U+AC00-D7AF, U+1100-11FF, U+3130-318F; /* 한글 범위 */
+}
+
+@font-face {
+  font-family: 'PFStardust';
+  src: url('/assets/fonts/PF스타더스트 3.0 Bold.ttf') format('truetype');
+  font-weight: bold;
+  font-style: normal;
+  unicode-range: U+AC00-D7AF, U+1100-11FF, U+3130-318F; /* 한글 범위 */
+}
+
+@font-face {
+  font-family: 'PFStardust';
+  src: url('/assets/fonts/PF스타더스트 3.0 ExtraBold.ttf') format('truetype');
+  font-weight: 800;
+  font-style: normal;
+  unicode-range: U+AC00-D7AF, U+1100-11FF, U+3130-318F; /* 한글 범위 */
+}
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
@@ -28,7 +53,15 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: DotGothic16, Noto Sans, Noto Sans KR;
+  font-family: DotGothic16, PFStardust, Noto Sans, Noto Sans KR;
+}
+
+/* 할 일 목록에만 기본 폰트 적용 */
+.todo-text,
+.todo-input,
+.todo-checkbox,
+.todo-item {
+  font-family: DotGothic16, Noto Sans, Noto Sans KR !important;
 }
 
 /* --- React Calendar Customization --- */

@@ -1,11 +1,11 @@
 'use client';
 
 import React from 'react';
-import {FaHome, FaCalendarAlt, FaCog} from 'react-icons/fa';
+import {FaHome, FaCalendarAlt, FaCog, FaCat} from 'react-icons/fa';
 
 interface TabNavigationProps {
-  activeTab: 'home' | 'calendar' | 'settings';
-  onTabChange: (tab: 'home' | 'calendar' | 'settings') => void;
+  activeTab: 'home' | 'calendar' | 'buddy' | 'settings';
+  onTabChange: (tab: 'home' | 'calendar' | 'buddy' | 'settings') => void;
 }
 
 const TabNavigation: React.FC<TabNavigationProps> = ({
@@ -22,6 +22,11 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
       id: 'calendar' as const,
       label: '캘린더',
       icon: FaCalendarAlt,
+    },
+    {
+      id: 'buddy' as const,
+      label: '버디',
+      icon: FaCat,
     },
     {
       id: 'settings' as const,

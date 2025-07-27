@@ -18,6 +18,9 @@ import {
 import useTodos from '../hooks/useTodos';
 import TabNavigation from '../component/TabNavigation';
 import SettingsTab from '../component/SettingsTab';
+import BuddyTab from '../component/BuddyTab';
+import JellyModal from '../component/JellyModal';
+import JellyDisplay from '../component/JellyDisplay';
 
 // ✅ 접이식 캘린더 컴포넌트
 interface Todo {
@@ -135,9 +138,14 @@ export default function MainPage() {
   }, [selectedCat]);
   const [visibleAdviceIds, setVisibleAdviceIds] = useState<string[]>([]);
   const [isLoadingCat, setIsLoadingCat] = useState(true);
-  const [activeTab, setActiveTab] = useState<'home' | 'calendar' | 'settings'>(
-    'home',
-  );
+  const [activeTab, setActiveTab] = useState<
+    'home' | 'calendar' | 'buddy' | 'settings'
+  >('home');
+
+  // 젤리 관련 상태
+  const [jellyCount, setJellyCount] = useState(0);
+  const [showJellyModal, setShowJellyModal] = useState(false);
+  const [unlockedCats, setUnlockedCats] = useState<string[]>(['두두']);
 
   const cats = useMemo(
     () => [
@@ -322,16 +330,124 @@ export default function MainPage() {
     return cats.find(c => c.name === catName)?.img || '/assets/dodo.png';
   };
 
+  // 젤리 조회
+  const fetchJellyData = React.useCallback(async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const userId = (session?.user as any)?.id;
+    if (!userId) return;
+
+    try {
+      const response = await fetch(`/api/user/jelly?userId=${userId}`);
+      if (response.ok) {
+        const data = await response.json();
+        setJellyCount(data.jellyCount);
+      }
+    } catch (error) {
+      console.error('Error fetching jelly data:', error);
+    }
+  }, [session?.user]);
+
+  // 젤리 획득 시도
+  const claimJelly = React.useCallback(async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const userId = (session?.user as any)?.id;
+    if (!userId) return;
+
+    try {
+      const response = await fetch('/api/user/jelly', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({userId}),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        setJellyCount(data.jellyCount);
+        setShowJellyModal(true);
+      }
+    } catch (error) {
+      console.error('Error claiming jelly:', error);
+    }
+  }, [session?.user]);
+
+  // 입양된 고양이 목록 조회
+  const fetchUnlockedCats = React.useCallback(async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const userId = (session?.user as any)?.id;
+    if (!userId) return;
+
+    try {
+      const response = await fetch(`/api/user/adopt-cat?userId=${userId}`);
+      if (response.ok) {
+        const data = await response.json();
+        setUnlockedCats(data.unlockedCats);
+      }
+    } catch (error) {
+      console.error('Error fetching unlocked cats:', error);
+    }
+  }, [session?.user]);
+
+  // 고양이 입양
+  const handleAdoptCat = React.useCallback(
+    async (catName: string) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const userId = (session?.user as any)?.id;
+      if (!userId) return;
+
+      try {
+        const response = await fetch('/api/user/adopt-cat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({userId, catName}),
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          setJellyCount(data.jellyCount);
+          setUnlockedCats(data.unlockedCats);
+          // 입양 성공 시 해당 고양이 선택
+          saveSelectedCat(catName);
+        } else {
+          // 에러 메시지 표시 (나중에 토스트나 알림으로 개선 가능)
+          console.log(data.message);
+        }
+      } catch (error) {
+        console.error('Error adopting cat:', error);
+      }
+    },
+    [session?.user, saveSelectedCat],
+  );
+
+  // 앱 접속 시 젤리 획득 시도 및 입양된 고양이 조회
+  React.useEffect(() => {
+    if (session?.user) {
+      fetchJellyData();
+      fetchUnlockedCats();
+      claimJelly();
+    }
+  }, [session?.user, fetchJellyData, fetchUnlockedCats, claimJelly]);
+
   // 탭별 컨텐츠 렌더링
   const renderTabContent = () => {
     switch (activeTab) {
-      case 'settings':
+      case 'buddy':
         return (
-          <SettingsTab
+          <BuddyTab
             selectedCat={selectedCat}
             onCatChange={saveSelectedCat}
+            jellyCount={jellyCount}
+            unlockedCats={unlockedCats}
+            onAdoptCat={handleAdoptCat}
           />
         );
+      case 'settings':
+        return <SettingsTab />;
       case 'calendar':
         return (
           <div className="px-2 py-2 pb-24 flex flex-col items-center justify-center min-h-screen">
@@ -357,10 +473,13 @@ export default function MainPage() {
         return (
           <div className="max-w-2xl mx-auto p-4 sm:p-6 pb-24">
             <header className="flex justify-between items-center mb-4">
-              <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-2">
-                <FaCat className="text-[#173f6d]" />
-                CAT DO
-              </h1>
+              <div className="flex items-center gap-4">
+                <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-2">
+                  <FaCat className="text-[#173f6d]" />
+                  CAT DO
+                </h1>
+                <JellyDisplay jellyCount={jellyCount} size="small" />
+              </div>
               <h2 className="text-xl font-bold text-gray-800">{selectedKey}</h2>
             </header>
             {isLoadingCat && (
@@ -495,7 +614,7 @@ export default function MainPage() {
                             />
                           ) : (
                             <span
-                              className={`flex-1 ${
+                              className={`flex-1 todo-text ${
                                 todo.completed
                                   ? 'line-through text-gray-500'
                                   : 'text-gray-800'
@@ -590,6 +709,14 @@ export default function MainPage() {
 
       {/* 하단 탭 네비게이션 */}
       <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+
+      {/* 젤리 모달 */}
+      <JellyModal
+        isOpen={showJellyModal}
+        onClose={() => setShowJellyModal(false)}
+        jellyCount={jellyCount}
+        type="jelly"
+      />
     </div>
   );
 }
