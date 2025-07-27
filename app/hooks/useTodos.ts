@@ -102,8 +102,8 @@ export default function useTodos(
 
   const getProcrastinationAdvice = useCallback(async () => {
     const todosForAdvice = todosByDate[selectedKey] || [];
-    const allCompleted = todosForAdvice.every(t => t.completed);
     const hasTodos = todosForAdvice.length > 0;
+    const allCompleted = hasTodos && todosForAdvice.every(t => t.completed);
 
     if (!hasTodos) {
       // 각 고양이의 성격에 맞는 메시지
@@ -190,7 +190,7 @@ export default function useTodos(
 
   // 조언 생성 최적화: 필요한 경우에만 호출
   useEffect(() => {
-    if (mounted && todosByDate[selectedKey]) {
+    if (mounted) {
       // 할일 상태가 변경될 때마다 조언 생성
       getProcrastinationAdvice();
     }
