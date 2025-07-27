@@ -21,6 +21,7 @@ import SettingsTab from '../component/SettingsTab';
 import BuddyTab from '../component/BuddyTab';
 import JellyModal from '../component/JellyModal';
 import JellyDisplay from '../component/JellyDisplay';
+import LoadingOverlay from '../component/LoadingOverlay';
 
 // ✅ 접이식 캘린더 컴포넌트
 interface Todo {
@@ -482,20 +483,11 @@ export default function MainPage() {
               </div>
               <h2 className="text-xl font-bold text-gray-800">{selectedKey}</h2>
             </header>
-            {isLoadingCat && (
-              <div className="text-center mb-4">
-                <div className="inline-flex items-center gap-2 px-3 py-1 bg-gray-100 text-gray-600 text-sm rounded-full">
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse"></div>
-                  <span>고양이를 불러오는 중...</span>
-                </div>
-              </div>
-            )}
+
             <div className="px-2">
               <div className="flex justify-center mb-6">
                 {isLoadingCat ? (
-                  <div className="w-[120px] h-[120px] bg-gray-200 rounded-lg animate-pulse flex items-center justify-center">
-                    <span className="text-gray-500">로딩중...</span>
-                  </div>
+                  <div className="w-[120px] h-[120px] bg-gray-200 rounded-lg animate-pulse"></div>
                 ) : (
                   <Image
                     src={catPixelImage}
@@ -529,10 +521,12 @@ export default function MainPage() {
                 </div>
               ) : isLoadingCat ? (
                 <div className="bg-gray-50 border-l-4 border-gray-300 text-gray-700 p-4 mb-6 rounded-r-lg">
-                  <p className="text-sm font-medium">
+                  <div className="flex items-center">
                     <span className="mr-2">🐱</span>
-                    고양이 비서를 불러오는 중...
-                  </p>
+                    <span className="text-sm font-medium">
+                      고양이 비서를 불러오는 중...
+                    </span>
+                  </div>
                 </div>
               ) : (
                 <div
@@ -717,6 +711,9 @@ export default function MainPage() {
         jellyCount={jellyCount}
         type="jelly"
       />
+
+      {/* 전체 로딩 오버레이 */}
+      <LoadingOverlay isVisible={isLoadingCat} text="로딩중" />
     </div>
   );
 }
