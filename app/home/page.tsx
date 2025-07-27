@@ -126,7 +126,13 @@ const FullCalendar = ({
 
 export default function MainPage() {
   const [date, setDate] = useState(new Date());
-  const [selectedCat, setSelectedCat] = useState('두두');
+  const [selectedCat, setSelectedCat] = useState<string>('두두');
+  const [hasLoadedCat, setHasLoadedCat] = useState(false);
+
+  // selectedCat 상태 변경 추적
+  React.useEffect(() => {
+    console.log('selectedCat 상태 변경:', selectedCat);
+  }, [selectedCat]);
   const [visibleAdviceIds, setVisibleAdviceIds] = useState<string[]>([]);
   const [isLoadingCat, setIsLoadingCat] = useState(true);
   const [activeTab, setActiveTab] = useState<'home' | 'calendar' | 'settings'>(
@@ -168,37 +174,53 @@ export default function MainPage() {
   }, [selectedCat]);
 
   const {data: session} = useSession();
+  const sessionRef = React.useRef(session);
 
-  // 선택된 고양이 로드 (한 번만 실행)
+  // session이 변경될 때마다 ref 업데이트
+  React.useEffect(() => {
+    sessionRef.current = session;
+  }, [session]);
+
+  // 선택된 고양이 로드 (캐싱 적용)
   const loadSelectedCat = React.useCallback(async () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if (!(session?.user as any)?.id) return;
+    const userId = (session?.user as any)?.id;
+    if (!userId) return;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    console.log('고양이 선택 로드 시작:', (session?.user as any)?.id);
+    // 이미 로드된 경우 스킵
+    if (hasLoadedCat) {
+      console.log('이미 고양이 정보가 로드됨, 스킵');
+      setIsLoadingCat(false);
+      return;
+    }
+
+    console.log('고양이 선택 로드 시작:', userId);
 
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const response = await fetch(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        `/api/user/selected-cat?userId=${(session?.user as any)?.id}`,
-      );
+      console.log('GET 요청 시작:', `/api/user/selected-cat?userId=${userId}`);
+      const response = await fetch(`/api/user/selected-cat?userId=${userId}`);
+      console.log('GET 응답 상태:', response.status);
+
       if (response.ok) {
         const data = await response.json();
         console.log('로드된 고양이 선택:', data);
+        console.log('이전 selectedCat:', selectedCat);
         setSelectedCat(data.selectedCat);
+        setHasLoadedCat(true);
+        console.log('설정된 selectedCat:', data.selectedCat);
       } else {
         console.error('고양이 선택 로드 실패:', response.status);
+        setSelectedCat('두두'); // 기본값 설정
+        setHasLoadedCat(true);
       }
     } catch (error) {
       console.error('고양이 선택 로드 오류:', error);
+      setSelectedCat('두두'); // 기본값 설정
+      setHasLoadedCat(true);
     } finally {
       setIsLoadingCat(false);
     }
-  }, [session?.user]);
+  }, [session?.user, hasLoadedCat]);
 
   // 선택된 고양이 저장 (디바운싱 적용)
   const saveSelectedCat = React.useCallback(
@@ -225,6 +247,7 @@ export default function MainPage() {
           const data = await response.json();
           console.log('저장된 고양이 선택:', data);
           setSelectedCat(catName);
+          setHasLoadedCat(true); // 캐시 유지
         } else {
           console.error('고양이 선택 저장 실패:', response.status);
         }
@@ -235,16 +258,30 @@ export default function MainPage() {
     [session?.user],
   );
 
-  // 세션이 로드되면 고양이 선택 로드 (한 번만)
+  // 세션이 로드되면 고양이 선택 로드 (캐싱 적용)
   React.useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if ((session?.user as any)?.id && isLoadingCat) {
-      loadSelectedCat();
+    const userId = (session?.user as any)?.id;
+    console.log('useEffect 실행:', {
+      userId,
+      isLoadingCat,
+      hasLoadedCat,
+      sessionExists: !!session,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } else if (!(session?.user as any)?.id) {
+      userExists: !!(session?.user as any),
+    });
+
+    if (userId && !hasLoadedCat) {
+      console.log('loadSelectedCat 호출');
+      loadSelectedCat();
+    } else if (!userId && session !== undefined) {
+      console.log('세션 없음, 로딩 상태 해제');
+      setIsLoadingCat(false);
+    } else if (hasLoadedCat) {
+      console.log('이미 로드됨, 로딩 상태 해제');
       setIsLoadingCat(false);
     }
-  }, [session?.user, loadSelectedCat, isLoadingCat]);
+  }, [session?.user, loadSelectedCat, isLoadingCat, hasLoadedCat]);
 
   const {
     mounted,
@@ -264,7 +301,12 @@ export default function MainPage() {
     startEdit,
     saveEdit,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } = useTodos(date, isLoadingCat ? '두두' : selectedCat, session as any);
+  } = useTodos(
+    date,
+    selectedCat,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    session as any,
+  );
 
   const handleAddTodo = () => {
     if (input.trim()) addTodo();
