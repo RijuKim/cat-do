@@ -29,11 +29,11 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
-  --cheese-primary: #ffb366; /* 치즈 주황 */
-  --cheese-secondary: #ffd700; /* 따뜻한 노랑 */
-  --cheese-light: #fff8dc; /* 크림색 */
-  --cheese-hover: #ff9a3c; /* 진한 주황 */
-  --cheese-bg: #fffaf0; /* 아이보리 */
+  --cheese-primary: #ffc085; /* 파스텔 치즈 주황 */
+  --cheese-secondary: #ffeaa7; /* 파스텔 노랑 */
+  --cheese-light: #fff8e1; /* 파스텔 크림색 */
+  --cheese-hover: #ffb74d; /* 파스텔 진한 주황 */
+  --cheese-bg: #fffef7; /* 파스텔 아이보리 */
 }
 
 @theme inline {
@@ -122,11 +122,11 @@ body {
 .calendar-large .react-calendar__month-view .react-calendar__tile--now,
 .calendar-large .react-calendar__month-view__days .react-calendar__tile--now,
 button.react-calendar__tile.react-calendar__tile--now {
-  background: #fff8dc !important; /* 크림색 */
-  background-color: #fff8dc !important; /* 크림색 중복 보장 */
-  border: 2px solid #ffb366 !important; /* 치즈색 테두리 */
+  background: #fff8e1 !important; /* 파스텔 크림색 */
+  background-color: #fff8e1 !important; /* 파스텔 크림색 중복 보장 */
+  border: 2px solid #ffc085 !important; /* 파스텔 치즈색 테두리 */
   border-radius: 0.5rem !important;
-  color: #8b4513 !important; /* 갈색 텍스트 */
+  color: #8d6e63 !important; /* 파스텔 갈색 텍스트 */
   font-weight: bold !important;
 }
 
@@ -135,15 +135,15 @@ button.react-calendar__tile.react-calendar__tile--now {
 .react-calendar .react-calendar__tile--now:enabled:focus,
 .calendar-large .react-calendar .react-calendar__tile--now:enabled:hover,
 .calendar-large .react-calendar .react-calendar__tile--now:enabled:focus {
-  background: #fff8dc !important;
-  background-color: #fff8dc !important;
-  border: 2px solid #ffb366 !important;
+  background: #fff8e1 !important;
+  background-color: #fff8e1 !important;
+  border: 2px solid #ffc085 !important;
 }
 
 /* 오늘 날짜 abbr 태그 스타일 */
 .react-calendar .react-calendar__tile--now abbr,
 .calendar-large .react-calendar .react-calendar__tile--now abbr {
-  color: #8b4513 !important;
+  color: #8d6e63 !important;
   font-weight: bold !important;
   text-decoration: none !important;
 }
@@ -152,7 +152,7 @@ button.react-calendar__tile.react-calendar__tile--now {
 .react-calendar__tile:enabled:focus,
 .calendar-large .react-calendar__tile:enabled:hover,
 .calendar-large .react-calendar__tile:enabled:focus {
-  background-color: #ffe4b5 !important; /* 연한 치즈색 */
+  background-color: #ffe8b3 !important; /* 파스텔 연한 치즈색 */
   border-radius: 0.5rem !important;
 }
 

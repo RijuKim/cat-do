@@ -43,6 +43,7 @@ model User {
   jellyCount            Int                     @default(0)
   lastJellyDate         String?
   unlockedCats          String[]                @default(["두두"])
+  moodChecks            Json?                   @default("{}") // 감정 체크 기록
   createdAt             DateTime                @default(now())
   procrastinationAdvice ProcrastinationAdvice[]
   todos                 Todo[]

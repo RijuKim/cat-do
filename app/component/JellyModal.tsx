@@ -23,7 +23,7 @@ const JellyModal: React.FC<JellyModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-white bg-opacity-80 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl p-6 max-w-sm w-full mx-4 transform transition-all">
         {/* 픽셀 스타일 젤리 모달 */}
         <div className="text-center space-y-4">
@@ -31,18 +31,20 @@ const JellyModal: React.FC<JellyModalProps> = ({
           <div className="flex justify-center">
             <div className="relative">
               {/* 젤리빈 모양 */}
-              <div className="w-20 h-20 bg-pink-400 rounded-full border-4 border-pink-600 shadow-lg relative overflow-hidden">
+              <div
+                className="w-20 h-20 rounded-full border-4 border-green-600 shadow-lg relative overflow-hidden"
+                style={{backgroundColor: '#DEE791'}}>
                 {/* 젤리 빛나는 효과 */}
-                <div className="absolute top-2 left-2 w-4 h-4 bg-pink-200 rounded-full opacity-60"></div>
-                <div className="absolute bottom-3 right-3 w-3 h-3 bg-pink-300 rounded-full opacity-50"></div>
+                <div className="absolute top-2 left-2 w-4 h-4 bg-green-200 rounded-full opacity-60"></div>
+                <div className="absolute bottom-3 right-3 w-3 h-3 bg-green-300 rounded-full opacity-50"></div>
                 {/* 젤리 표면 반사 */}
                 <div className="absolute top-1 left-1 w-2 h-2 bg-white rounded-full opacity-80"></div>
               </div>
               {/* 젤리 위의 작은 하트들 */}
-              <div className="absolute -top-2 -right-2 text-pink-500 animate-bounce">
+              <div className="absolute -top-2 -right-2 text-green-500 animate-bounce">
                 <FaHeart size={16} />
               </div>
-              <div className="absolute -bottom-1 -left-1 text-pink-400 animate-pulse">
+              <div className="absolute -bottom-1 -left-1 text-green-400 animate-pulse">
                 <FaHeart size={12} />
               </div>
             </div>
@@ -70,9 +72,11 @@ const JellyModal: React.FC<JellyModalProps> = ({
           </div>
 
           {/* 젤리 개수 표시 */}
-          <div className="bg-gradient-to-r from-pink-100 to-purple-100 rounded-lg p-4 border-2 border-pink-200">
+          <div className="bg-gradient-to-r from-green-100 to-emerald-100 rounded-lg p-4 border-2 border-green-200">
             <div className="flex items-center justify-center gap-2">
-              <div className="w-6 h-6 bg-pink-400 rounded-full border-2 border-pink-600"></div>
+              <div
+                className="w-6 h-6 rounded-full border-2 border-green-600"
+                style={{backgroundColor: '#DEE791'}}></div>
               <span className="text-lg font-bold text-gray-800">
                 {jellyCount}개
               </span>
@@ -81,7 +85,7 @@ const JellyModal: React.FC<JellyModalProps> = ({
               {type === 'jelly' ? '현재 보유 젤리' : '보유 젤리'}
             </p>
             {type === 'adopt' && (
-              <p className="text-xs text-pink-600 font-bold mt-2">
+              <p className="text-xs text-orange-600 font-bold mt-2">
                 필요 젤리: 10개
               </p>
             )}
@@ -92,7 +96,7 @@ const JellyModal: React.FC<JellyModalProps> = ({
             {[...Array(5)].map((_, i) => (
               <FaHeart
                 key={i}
-                className="text-pink-400 animate-pulse"
+                className="text-green-400 animate-pulse"
                 style={{
                   animationDelay: `${i * 0.2}s`,
                   animationDuration: '1s',
@@ -106,7 +110,7 @@ const JellyModal: React.FC<JellyModalProps> = ({
           {type === 'jelly' ? (
             <button
               onClick={onClose}
-              className="w-full bg-gradient-to-r from-pink-400 to-purple-400 text-white font-bold py-3 px-6 rounded-lg hover:from-pink-500 hover:to-purple-500 transition-all duration-200 transform hover:scale-105 shadow-lg">
+              className="w-full bg-gradient-to-r from-orange-300 to-yellow-300 text-white font-bold py-3 px-6 rounded-lg hover:from-orange-400 hover:to-yellow-400 transition-all duration-200 transform hover:scale-105 shadow-lg">
               확인
             </button>
           ) : (
@@ -118,7 +122,7 @@ const JellyModal: React.FC<JellyModalProps> = ({
               </button>
               <button
                 onClick={onConfirm}
-                className="flex-1 bg-gradient-to-r from-pink-400 to-purple-400 text-white font-bold py-3 px-6 rounded-lg hover:from-pink-500 hover:to-purple-500 transition-all duration-200 transform hover:scale-105 shadow-lg">
+                className="flex-1 bg-gradient-to-r from-orange-300 to-yellow-300 text-white font-bold py-3 px-6 rounded-lg hover:from-orange-400 hover:to-yellow-400 transition-all duration-200 transform hover:scale-105 shadow-lg">
                 네
               </button>
             </div>

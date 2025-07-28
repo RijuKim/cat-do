@@ -78,7 +78,7 @@ export async function POST(request: Request) {
         }
 
         const task = {
-          title: `📝 ${todo.text}`,
+          title: `${todo.text}`,
           notes,
           due: `${todo.date}T00:00:00.000Z`, // 마감일 설정
           status: todo.completed ? 'completed' : 'needsAction', // 완료 상태 설정

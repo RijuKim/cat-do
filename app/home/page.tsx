@@ -19,9 +19,10 @@ import useTodos from '../hooks/useTodos';
 import TabNavigation from '../component/TabNavigation';
 import SettingsTab from '../component/SettingsTab';
 import BuddyTab from '../component/BuddyTab';
-import JellyModal from '../component/JellyModal';
 import JellyDisplay from '../component/JellyDisplay';
 import LoadingOverlay from '../component/LoadingOverlay';
+import AttendanceModal from '../component/AttendanceModal';
+import CatSpeechBubble from '../component/CatSpeechBubble';
 
 // ✅ 접이식 캘린더 컴포넌트
 interface Todo {
@@ -102,8 +103,8 @@ const FullCalendar = ({
                           key={todo.id}
                           className={`px-1 py-0.5 rounded text-xs leading-tight flex-shrink-0 calendar-todo-item ${
                             todo.completed
-                              ? 'bg-green-100 text-green-700'
-                              : 'bg-blue-100 text-blue-700'
+                              ? 'bg-green-50 text-green-600'
+                              : 'bg-orange-50 text-orange-600'
                           }`}
                           title={todo.text} // 호버시 전체 내용 보기
                           style={{
@@ -147,7 +148,7 @@ export default function MainPage() {
 
   // 젤리 관련 상태
   const [jellyCount, setJellyCount] = useState(0);
-  const [showJellyModal, setShowJellyModal] = useState(false);
+  const [showAttendanceModal, setShowAttendanceModal] = useState(false);
   const [unlockedCats, setUnlockedCats] = useState<string[]>(['두두']);
 
   const cats = useMemo(
@@ -333,6 +334,51 @@ export default function MainPage() {
     return cats.find(c => c.name === catName)?.img || '/assets/dodo.png';
   };
 
+  const getDefaultMessage = (): string => {
+    const todayTodos = todosByDate[selectedKey] || [];
+
+    if (todayTodos.length === 0) {
+      // 할 일이 없을 때
+      switch (selectedCat) {
+        case '두두':
+          return '할 일을 추가해보세요!';
+        case '코코':
+          return '오늘 할 일을 추가해보세요~';
+        case '깜냥':
+          return '할 일이 없네. 뭐든 추가해봐!';
+        default:
+          return '할 일을 추가해보세요!';
+      }
+    } else {
+      // 할 일이 있을 때
+      const incompleteTodos = todayTodos.filter(todo => !todo.completed);
+      if (incompleteTodos.length > 0) {
+        switch (selectedCat) {
+          case '두두':
+            return '흥, 할 일이 남아있군... 그래도 집사라면 해낼 수 있을 거다냥.';
+          case '코코':
+            return '할 일이 있지만~ 하루는 기니까, 마음을 편하게 가져, 야옹~';
+          case '깜냥':
+            return '뭐야! 할 일이 이렇게나 남아있는데 뭐하고 있는 거야? 빨리 해라냥!';
+          default:
+            return '할 일을 완료해보세요!';
+        }
+      } else {
+        // 모든 할 일이 완료되었을 때
+        switch (selectedCat) {
+          case '두두':
+            return '오늘 할 일을 모두 완료했구나. 잘했어, 집사!';
+          case '코코':
+            return '오늘도 수고했어~ 모든 할 일을 완료했구나!';
+          case '깜냥':
+            return '흥, 그래도 할 일은 다 했구나. 나쁘지 않아.';
+          default:
+            return '오늘 할 일을 모두 완료했어요!';
+        }
+      }
+    }
+  };
+
   // 젤리 조회
   const fetchJellyData = React.useCallback(async () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -350,31 +396,61 @@ export default function MainPage() {
     }
   }, [session?.user]);
 
-  // 젤리 획득 시도
-  const claimJelly = React.useCallback(async () => {
+  // 출석 체크 시도
+  const claimAttendance = React.useCallback(async () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const userId = (session?.user as any)?.id;
     if (!userId) return;
 
     try {
-      const response = await fetch('/api/user/jelly', {
-        method: 'POST',
+      const response = await fetch(`/api/user/attendance?userId=${userId}`, {
+        method: 'GET',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({userId}),
       });
 
       const data = await response.json();
 
-      if (response.ok && data.success) {
-        setJellyCount(data.jellyCount);
-        setShowJellyModal(true);
+      if (response.ok && data.canReceive) {
+        setShowAttendanceModal(true);
       }
     } catch (error) {
-      console.error('Error claiming jelly:', error);
+      console.error('Error checking attendance:', error);
     }
   }, [session?.user]);
+
+  // 감정 제출 및 젤리 획득
+  const handleMoodSubmit = React.useCallback(
+    async (mood: string) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const userId = (session?.user as any)?.id;
+      if (!userId) return;
+
+      try {
+        const response = await fetch('/api/user/attendance', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            userId,
+            selectedCat,
+            mood,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          setJellyCount(data.jellyCount);
+        }
+      } catch (error) {
+        console.error('Error submitting mood:', error);
+      }
+    },
+    [session?.user, selectedCat],
+  );
 
   // 입양된 고양이 목록 조회
   const fetchUnlockedCats = React.useCallback(async () => {
@@ -427,14 +503,14 @@ export default function MainPage() {
     [session?.user, saveSelectedCat],
   );
 
-  // 앱 접속 시 젤리 획득 시도 및 입양된 고양이 조회
+  // 앱 접속 시 출석 체크 시도 및 입양된 고양이 조회
   React.useEffect(() => {
     if (session?.user) {
       fetchJellyData();
       fetchUnlockedCats();
-      claimJelly();
+      claimAttendance();
     }
-  }, [session?.user, fetchJellyData, fetchUnlockedCats, claimJelly]);
+  }, [session?.user, fetchJellyData, fetchUnlockedCats, claimAttendance]);
 
   // 탭별 컨텐츠 렌더링
   const renderTabContent = () => {
@@ -478,7 +554,7 @@ export default function MainPage() {
             <header className="flex justify-between items-center mb-4">
               <div className="flex items-center gap-4">
                 <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-2">
-                  <FaCat className="text-[#173f6d]" />
+                  <FaCat className="text-orange-400" />
                   CAT DO
                 </h1>
                 <JellyDisplay jellyCount={jellyCount} size="small" />
@@ -487,6 +563,14 @@ export default function MainPage() {
             </header>
 
             <div className="px-2">
+              {/* 말풍선 */}
+              <CatSpeechBubble
+                message={message || getDefaultMessage()}
+                selectedCat={selectedCat}
+                isLoading={isLoadingCat}
+              />
+
+              {/* 고양이 이미지 */}
               <div className="flex justify-center mb-6">
                 {isLoadingCat ? (
                   <div className="w-[120px] h-[120px] bg-gray-200 rounded-lg animate-pulse"></div>
@@ -503,53 +587,6 @@ export default function MainPage() {
                   />
                 )}
               </div>
-              {message ? (
-                <div
-                  className={`p-4 mb-6 rounded-r-lg border-l-4 ${
-                    message.includes('열심히 생각 중') ||
-                    message.includes('미안, 지금은 조언을 해줄 수 없어')
-                      ? 'bg-yellow-50 border-yellow-300 text-yellow-800' // 로딩/에러 노랑
-                      : message.includes('✅') || message.includes('📝')
-                      ? 'bg-green-50 border-green-300 text-green-800' // 성공 초록
-                      : message.includes('❌')
-                      ? 'bg-red-50 border-red-300 text-red-800' // 에러 빨강
-                      : selectedCat === '두두'
-                      ? 'bg-orange-50 border-orange-300 text-orange-800' // 츤데레 오렌지
-                      : selectedCat === '코코'
-                      ? 'bg-blue-50 border-blue-300 text-blue-800' // 우아한 파랑
-                      : 'bg-gray-50 border-gray-300 text-gray-800' // 직설적 회색
-                  }`}>
-                  <p className="text-sm">{message}</p>
-                </div>
-              ) : isLoadingCat ? (
-                <div className="bg-gray-50 border-l-4 border-gray-300 text-gray-700 p-4 mb-6 rounded-r-lg">
-                  <div className="flex items-center">
-                    <span className="mr-2">🐱</span>
-                    <span className="text-sm font-medium">
-                      고양이 비서를 불러오는 중...
-                    </span>
-                  </div>
-                </div>
-              ) : (
-                <div
-                  className={`p-4 mb-6 rounded-r-lg border-l-4 ${
-                    selectedCat === '두두'
-                      ? 'bg-orange-50 border-orange-300 text-orange-800' // 츤데레 오렌지
-                      : selectedCat === '코코'
-                      ? 'bg-blue-50 border-blue-300 text-blue-800' // 우아한 파랑
-                      : 'bg-gray-50 border-gray-300 text-gray-800' // 직설적 회색
-                  }`}>
-                  <p className="text-sm font-medium">
-                    <span className="mr-2">🐱</span>
-                    {selectedCat === '두두' &&
-                      '흥, 할 일이 남아있군... 그래도 집사라면 해낼 수 있을 거다냥.'}
-                    {selectedCat === '코코' &&
-                      '할 일이 있지만~ 하루는 기니까, 마음을 편하게 가져, 야옹~'}
-                    {selectedCat === '깜냥' &&
-                      '뭐야! 할 일이 이렇게나 남아있는데 뭐하고 있는 거야? 빨리 해라냥!'}
-                  </p>
-                </div>
-              )}
 
               <div className="relative mb-6">
                 <input
@@ -706,12 +743,12 @@ export default function MainPage() {
       {/* 하단 탭 네비게이션 */}
       <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
 
-      {/* 젤리 모달 */}
-      <JellyModal
-        isOpen={showJellyModal}
-        onClose={() => setShowJellyModal(false)}
-        jellyCount={jellyCount}
-        type="jelly"
+      {/* 출석 체크 모달 */}
+      <AttendanceModal
+        isOpen={showAttendanceModal}
+        onClose={() => setShowAttendanceModal(false)}
+        selectedCat={selectedCat}
+        onMoodSubmit={handleMoodSubmit}
       />
 
       {/* 전체 로딩 오버레이 */}
