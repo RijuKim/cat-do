@@ -1,7 +1,16 @@
 'use client';
 
 import Image from 'next/image';
-import {FaPaw, FaHeart} from 'react-icons/fa';
+import dynamic from 'next/dynamic';
+
+const FaPaw = dynamic(
+  () => import('react-icons/fa').then(mod => ({default: mod.FaPaw})),
+  {ssr: false},
+);
+const FaHeart = dynamic(
+  () => import('react-icons/fa').then(mod => ({default: mod.FaHeart})),
+  {ssr: false},
+);
 import duduImg from '../../public/assets/dodo.png';
 import kakaoImg from '../../public/assets/kakao.png';
 

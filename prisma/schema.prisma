@@ -41,9 +41,11 @@ model User {
   name                  String?
   selectedCat           String?                 @default("두두")
   jellyCount            Int                     @default(0)
-  lastJellyDate         String?
+  lastActivityDate      String?                 // 마지막 활동 날짜 (로그인/젤리 획득)
   unlockedCats          String[]                @default(["두두"])
   moodChecks            Json?                   @default("{}") // 감정 체크 기록
+  dailyMoodCheck        String?                 // 하루 1번 감정 질문 날짜
+  loginStreak           Int                     @default(0) // 연속 로그인 횟수
   createdAt             DateTime                @default(now())
   procrastinationAdvice ProcrastinationAdvice[]
   todos                 Todo[]

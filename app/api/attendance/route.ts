@@ -38,6 +38,17 @@ export async function POST(request: NextRequest) {
       const moodText = moodTexts[mood as keyof typeof moodTexts] || '좋은 기분';
 
       userContent = `집사가 오늘 기분이 "${moodText}"이라고 했어. 이에 대한 따뜻한 응답을 해주고, 젤리 1개를 주겠다고 말해줘. 1~2줄로 답해줘.`;
+    } else if (type === 'daily_mood_response') {
+      // 하루 1번 감정 질문 응답
+      const moodTexts = {
+        '😊': '좋았어',
+        '😐': '그냥 그래',
+        '😞': '힘들었어',
+      };
+
+      const moodText = moodTexts[mood as keyof typeof moodTexts] || '좋았어';
+
+      userContent = `집사가 오늘 하루가 "${moodText}"이라고 했어. 이에 대한 따뜻한 응답을 해주고, 젤리 1개를 주겠다고 말해줘. 1~2줄로 답해줘.`;
     }
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {

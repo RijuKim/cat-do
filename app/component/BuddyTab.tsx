@@ -2,7 +2,15 @@
 
 import React, {useState, useEffect} from 'react';
 import Image from 'next/image';
-import {FaHeart} from 'react-icons/fa';
+import dynamic from 'next/dynamic';
+
+const FaHeart = dynamic(
+  () => import('react-icons/fa').then(mod => ({default: mod.FaHeart})),
+  {
+    ssr: false,
+    loading: () => <span className="text-orange-500">❤️</span>,
+  },
+);
 import JellyDisplay from './JellyDisplay';
 
 interface BuddyTabProps {
@@ -246,9 +254,11 @@ const BuddyTab: React.FC<BuddyTabProps> = ({
 
       {/* 입양 확인 모달 */}
       {showAdoptModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-transparent flex items-center justify-center z-50 p-4">
           {/* 배경 클릭으로 모달 닫기 */}
-          <div className="absolute inset-0" onClick={handleCloseModal}></div>
+          <div
+            className="absolute inset-0 bg-transparent"
+            onClick={handleCloseModal}></div>
           <div className="bg-white rounded-2xl p-6 max-w-sm w-full mx-4 transform transition-all relative z-10">
             <div className="text-center space-y-4">
               {adoptResult === null ? (
