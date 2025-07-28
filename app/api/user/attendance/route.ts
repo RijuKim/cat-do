@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
 
     const user = await prisma.user.findUnique({
       where: {id: userId},
-      select: {lastJellyDate: true},
+      select: {lastActivityDate: true},
     });
 
     if (!user) {
@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
     }
 
     const today = new Date().toISOString().split('T')[0];
-    const canReceive = user.lastJellyDate !== today;
+    const canReceive = user.lastActivityDate !== today;
 
     return NextResponse.json({canReceive});
   } catch (error) {
@@ -49,14 +49,14 @@ export async function POST(request: NextRequest) {
     // 오늘 이미 출석 체크했는지 확인
     const user = await prisma.user.findUnique({
       where: {id: userId},
-      select: {lastJellyDate: true, jellyCount: true, moodChecks: true},
+      select: {lastActivityDate: true, jellyCount: true, moodChecks: true},
     });
 
     if (!user) {
       return NextResponse.json({error: 'User not found'}, {status: 404});
     }
 
-    if (user.lastJellyDate === today) {
+    if (user.lastActivityDate === today) {
       return NextResponse.json(
         {error: 'Already received attendance reward today'},
         {status: 400},
@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
       where: {id: userId},
       data: {
         jellyCount: {increment: 1},
-        lastJellyDate: today,
+        lastActivityDate: today,
         moodChecks: updatedMoodChecks,
       },
       select: {jellyCount: true},

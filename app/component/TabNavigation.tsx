@@ -1,7 +1,24 @@
 'use client';
 
 import React from 'react';
-import {FaHome, FaCalendarAlt, FaCog, FaCat} from 'react-icons/fa';
+import dynamic from 'next/dynamic';
+
+const FaHome = dynamic(
+  () => import('react-icons/fa').then(mod => ({default: mod.FaHome})),
+  {ssr: false},
+);
+const FaCalendarAlt = dynamic(
+  () => import('react-icons/fa').then(mod => ({default: mod.FaCalendarAlt})),
+  {ssr: false},
+);
+const FaCog = dynamic(
+  () => import('react-icons/fa').then(mod => ({default: mod.FaCog})),
+  {ssr: false},
+);
+const FaCat = dynamic(
+  () => import('react-icons/fa').then(mod => ({default: mod.FaCat})),
+  {ssr: false},
+);
 
 interface TabNavigationProps {
   activeTab: 'home' | 'calendar' | 'buddy' | 'settings';

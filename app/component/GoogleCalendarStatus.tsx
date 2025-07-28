@@ -1,7 +1,23 @@
 'use client';
 
 import {useSession, signIn} from 'next-auth/react';
-import {FaGoogle, FaCalendarAlt, FaExclamationTriangle} from 'react-icons/fa';
+import dynamic from 'next/dynamic';
+
+const FaGoogle = dynamic(
+  () => import('react-icons/fa').then(mod => ({default: mod.FaGoogle})),
+  {ssr: false},
+);
+const FaCalendarAlt = dynamic(
+  () => import('react-icons/fa').then(mod => ({default: mod.FaCalendarAlt})),
+  {ssr: false},
+);
+const FaExclamationTriangle = dynamic(
+  () =>
+    import('react-icons/fa').then(mod => ({
+      default: mod.FaExclamationTriangle,
+    })),
+  {ssr: false},
+);
 
 interface ExtendedSession {
   accessToken?: string;

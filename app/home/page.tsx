@@ -5,15 +5,36 @@ import {useSession} from 'next-auth/react';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import Image from 'next/image';
-import {
-  FaTrash,
-  FaEdit,
-  FaSave,
-  FaPlus,
-  FaCat,
-  FaLightbulb,
-  FaPaw,
-} from 'react-icons/fa';
+import dynamic from 'next/dynamic';
+
+const FaTrash = dynamic(
+  () => import('react-icons/fa').then(mod => ({default: mod.FaTrash})),
+  {ssr: false},
+);
+const FaEdit = dynamic(
+  () => import('react-icons/fa').then(mod => ({default: mod.FaEdit})),
+  {ssr: false},
+);
+const FaSave = dynamic(
+  () => import('react-icons/fa').then(mod => ({default: mod.FaSave})),
+  {ssr: false},
+);
+const FaPlus = dynamic(
+  () => import('react-icons/fa').then(mod => ({default: mod.FaPlus})),
+  {ssr: false},
+);
+const FaCat = dynamic(
+  () => import('react-icons/fa').then(mod => ({default: mod.FaCat})),
+  {ssr: false},
+);
+const FaLightbulb = dynamic(
+  () => import('react-icons/fa').then(mod => ({default: mod.FaLightbulb})),
+  {ssr: false},
+);
+const FaPaw = dynamic(
+  () => import('react-icons/fa').then(mod => ({default: mod.FaPaw})),
+  {ssr: false},
+);
 
 import useTodos from '../hooks/useTodos';
 import TabNavigation from '../component/TabNavigation';
@@ -149,6 +170,7 @@ export default function MainPage() {
   // 젤리 관련 상태
   const [jellyCount, setJellyCount] = useState(0);
   const [showAttendanceModal, setShowAttendanceModal] = useState(false);
+
   const [unlockedCats, setUnlockedCats] = useState<string[]>(['두두']);
 
   const cats = useMemo(
@@ -379,48 +401,64 @@ export default function MainPage() {
     }
   };
 
-  // 젤리 조회
-  const fetchJellyData = React.useCallback(async () => {
+  // 출석 체크 확인 (하루에 한 번만)
+  const checkAttendance = React.useCallback(async () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const userId = (session?.user as any)?.id;
     if (!userId) return;
 
-    try {
-      const response = await fetch(`/api/user/jelly?userId=${userId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setJellyCount(data.jellyCount);
-      }
-    } catch (error) {
-      console.error('Error fetching jelly data:', error);
-    }
-  }, [session?.user]);
+    // 이미 오늘 체크했는지 확인 (테스트를 위해 임시로 주석 처리)
+    const today = new Date().toISOString().split('T')[0];
+    const lastChecked = localStorage.getItem(`modalChecked_${userId}`);
 
-  // 출석 체크 시도
-  const claimAttendance = React.useCallback(async () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const userId = (session?.user as any)?.id;
-    if (!userId) return;
+    // 테스트를 위해 모달이 항상 표시되도록 수정
+    console.log('Modal check - lastChecked:', lastChecked, 'today:', today);
+
+    // if (lastChecked === today) {
+    //   // 패턴 정보만 업데이트하고 모달은 표시하지 않음
+    //   try {
+    //     const response = await fetch(`/api/user/daily-mood?userId=${userId}`, {
+    //       method: 'GET',
+    //       headers: {'Content-Type': 'application/json'},
+    //     });
+    //     const data = await response.json();
+    //     if (response.ok) {
+    //       setUserPattern({
+    //         completionRate: data.completionRate,
+    //         loginStreak: data.loginStreak,
+    //         hasAttendanceToday: data.hasAttendanceToday,
+    //         canAskDailyMood: data.canAskDailyMood,
+    //       });
+    //     }
+    //   } catch (error) {
+    //     console.error('Error checking user pattern:', error);
+    //   }
+    //   return;
+    // }
 
     try {
-      const response = await fetch(`/api/user/attendance?userId=${userId}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
+      // 출석 체크만 확인
+      const attendanceResponse = await fetch(
+        `/api/user/attendance?userId=${userId}`,
+        {
+          method: 'GET',
+          headers: {'Content-Type': 'application/json'},
         },
-      });
+      );
+      const attendanceData = await attendanceResponse.json();
 
-      const data = await response.json();
-
-      if (response.ok && data.canReceive) {
+      if (attendanceResponse.ok && attendanceData.canReceive) {
         setShowAttendanceModal(true);
       }
+
+      // 오늘 체크 완료 표시
+      localStorage.setItem(`modalChecked_${userId}`, today);
     } catch (error) {
       console.error('Error checking attendance:', error);
     }
   }, [session?.user]);
 
-  // 감정 제출 및 젤리 획득
+  // 출석 체크 감정 제출 및 젤리 획득
   const handleMoodSubmit = React.useCallback(
     async (mood: string) => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -503,14 +541,44 @@ export default function MainPage() {
     [session?.user, saveSelectedCat],
   );
 
-  // 앱 접속 시 출석 체크 시도 및 입양된 고양이 조회
+  // 로그인 추적 (하루에 한 번만)
+  const trackLogin = React.useCallback(async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const userId = (session?.user as any)?.id;
+    if (!userId) return;
+
+    // 이미 오늘 추적했는지 확인
+    const today = new Date().toISOString().split('T')[0];
+    const lastTracked = localStorage.getItem(`loginTracked_${userId}`);
+
+    if (lastTracked === today) {
+      return; // 이미 오늘 추적했으면 스킵
+    }
+
+    try {
+      await fetch('/api/user/login-track', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({userId}),
+      });
+
+      // 오늘 추적 완료 표시
+      localStorage.setItem(`loginTracked_${userId}`, today);
+    } catch (error) {
+      console.error('Error tracking login:', error);
+    }
+  }, [session?.user]);
+
+  // 앱 접속 시 사용자 패턴 확인 및 모달 체크
   React.useEffect(() => {
     if (session?.user) {
-      fetchJellyData();
+      trackLogin();
       fetchUnlockedCats();
-      claimAttendance();
+      checkAttendance();
     }
-  }, [session?.user, fetchJellyData, fetchUnlockedCats, claimAttendance]);
+  }, [session?.user, trackLogin, fetchUnlockedCats, checkAttendance]);
 
   // 탭별 컨텐츠 렌더링
   const renderTabContent = () => {
@@ -562,7 +630,7 @@ export default function MainPage() {
               <h2 className="text-xl font-bold text-gray-800">{selectedKey}</h2>
             </header>
 
-            <div className="px-2">
+            <div className="py-2 px-2">
               {/* 말풍선 */}
               <CatSpeechBubble
                 message={message || getDefaultMessage()}
@@ -626,7 +694,7 @@ export default function MainPage() {
                 ) : (
                   mounted &&
                   (todosByDate[selectedKey] || []).map((todo, index) => (
-                    <li key={todo.id} className="py-3">
+                    <li key={todo.id} className="py-1">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3 flex-1">
                           <input

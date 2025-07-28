@@ -3,13 +3,31 @@
 import React, {useState} from 'react';
 import {useSession, signOut} from 'next-auth/react';
 import GoogleCalendarStatus from './GoogleCalendarStatus';
-import {
-  FaDownload,
-  FaSync,
-  FaCheck,
-  FaExclamationTriangle,
-  FaUpload,
-} from 'react-icons/fa';
+import dynamic from 'next/dynamic';
+
+const FaDownload = dynamic(
+  () => import('react-icons/fa').then(mod => ({default: mod.FaDownload})),
+  {ssr: false},
+);
+const FaSync = dynamic(
+  () => import('react-icons/fa').then(mod => ({default: mod.FaSync})),
+  {ssr: false},
+);
+const FaCheck = dynamic(
+  () => import('react-icons/fa').then(mod => ({default: mod.FaCheck})),
+  {ssr: false},
+);
+const FaExclamationTriangle = dynamic(
+  () =>
+    import('react-icons/fa').then(mod => ({
+      default: mod.FaExclamationTriangle,
+    })),
+  {ssr: false},
+);
+const FaUpload = dynamic(
+  () => import('react-icons/fa').then(mod => ({default: mod.FaUpload})),
+  {ssr: false},
+);
 
 const SettingsTab: React.FC = () => {
   const {data: session} = useSession() as {data: {accessToken?: string} | null};
