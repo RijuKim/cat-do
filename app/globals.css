@@ -76,6 +76,17 @@ body {
   max-width: none !important;
 }
 
+/* 모바일에서 캘린더 패딩 조정 */
+@media (max-width: 640px) {
+  .react-calendar {
+    padding: 0.25rem !important;
+    border-radius: 0.5rem !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+}
+
 .react-calendar__month-view__weekdays {
   border-bottom: none !important;
 }
@@ -204,8 +215,8 @@ button.react-calendar__tile.react-calendar__tile--now {
 .calendar-large .react-calendar,
 .calendar-large .react-calendar__viewContainer,
 .calendar-large .react-calendar__month-view {
-  width: 95vw !important;
-  max-width: 1200px !important;
+  width: 100% !important;
+  max-width: 100% !important;
   font-size: 0.875rem !important;
   margin: 0 auto !important;
   display: block !important;
@@ -282,15 +293,18 @@ button.react-calendar__tile.react-calendar__tile--now {
 .calendar-todo-item {
   min-width: 0;
   flex-shrink: 1;
-  max-width: 100%;
+  width: 100%;
   box-sizing: border-box;
+  overflow: hidden;
+  text-overflow: clip;
+  white-space: nowrap;
 }
 
 /* 모바일에서 더 짧게 자르기 */
 @media (max-width: 640px) {
   .calendar-todo-item {
     font-size: 0.65rem;
-    max-width: calc(100vw / 7 - 8px); /* 7분할에서 패딩 제외 */
+    width: 100%;
   }
 }
 
@@ -337,22 +351,57 @@ button.react-calendar__tile.react-calendar__tile--now {
   .calendar-large .react-calendar,
   .calendar-large .react-calendar__viewContainer,
   .calendar-large .react-calendar__month-view {
-    width: 100vw !important;
+    width: 100% !important;
+    max-width: 100% !important;
     margin: 0 !important;
     padding: 0 !important;
+    box-sizing: border-box !important;
+    overflow: visible !important;
+  }
+
+  .calendar-large .react-calendar {
+    padding: 0.25rem !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
   }
 
   .calendar-large .react-calendar__tile,
   .calendar-large .react-calendar__month-view__days__day {
     height: auto !important;
-    min-height: 70px !important;
+    min-height: 60px !important;
     max-height: none !important;
-    font-size: 0.7rem !important;
-    padding: 1px !important;
+    font-size: 0.65rem !important;
+    padding: 0.5px !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important; /* 변경: visible에서 hidden으로 */
+    width: 100% !important; /* 추가: 동일한 가로 크기 보장 */
   }
 
   .calendar-large .react-calendar__tile abbr {
-    font-size: 0.7rem !important;
+    font-size: 0.65rem !important;
+  }
+
+  /* 모바일에서 캘린더 컨테이너 패딩 조정 */
+  .calendar-large .react-calendar__month-view__weekdays {
+    padding: 0.125rem 0 !important;
+    font-size: 0.65rem !important;
+  }
+
+  /* 모바일에서 네비게이션 패딩 조정 */
+  .calendar-large .react-calendar__navigation {
+    padding: 0.25rem 0 !important;
+  }
+
+  /* 모바일에서 캘린더 할일 아이템 크기 조정 */
+  .calendar-todo-item {
+    font-size: 0.6rem !important;
+    width: 100% !important; /* 변경: max-width에서 width로 */
+    padding: 0.25rem !important;
+    overflow: hidden !important; /* 추가: 텍스트 잘림 */
+    text-overflow: clip !important; /* 추가: ... 제거 */
+    white-space: nowrap !important; /* 추가: 한 줄로 제한 */
   }
 }
 

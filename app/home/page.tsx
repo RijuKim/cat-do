@@ -100,17 +100,19 @@ const FullCalendar = ({
                       {todosForDay.map(todo => (
                         <div
                           key={todo.id}
-                          className={`px-1 py-0.5 rounded text-xs leading-tight flex-shrink-0 whitespace-nowrap overflow-hidden calendar-todo-item ${
+                          className={`px-1 py-0.5 rounded text-xs leading-tight flex-shrink-0 calendar-todo-item ${
                             todo.completed
                               ? 'bg-green-100 text-green-700'
                               : 'bg-blue-100 text-blue-700'
                           }`}
                           title={todo.text} // 호버시 전체 내용 보기
                           style={{
-                            textOverflow: 'ellipsis',
+                            textOverflow: 'clip',
                             lineHeight: '1.2',
                             minWidth: 0,
                             width: '100%',
+                            overflow: 'hidden',
+                            whiteSpace: 'nowrap',
                           }}>
                           {todo.text}
                         </div>
@@ -451,21 +453,21 @@ export default function MainPage() {
         return <SettingsTab />;
       case 'calendar':
         return (
-          <div className="px-2 py-2 pb-24 flex flex-col items-center justify-center min-h-screen">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
-              📅 Calendar
-            </h2>
-            <div className="w-full flex justify-center overflow-hidden">
-              <FullCalendar
-                date={date}
-                setDate={setDate}
-                todosByDate={todosByDate}
-                mounted={mounted}
-                onDateClick={(clickedDate: Date) => {
-                  setDate(clickedDate);
-                  setActiveTab('home');
-                }}
-              />
+          <div className="p-4 space-y-6 pb-24">
+            {/* 캘린더 컨테이너 - 전체 너비 사용 */}
+            <div className="w-full">
+              <div className="w-full flex justify-center overflow-hidden">
+                <FullCalendar
+                  date={date}
+                  setDate={setDate}
+                  todosByDate={todosByDate}
+                  mounted={mounted}
+                  onDateClick={(clickedDate: Date) => {
+                    setDate(clickedDate);
+                    setActiveTab('home');
+                  }}
+                />
+              </div>
             </div>
           </div>
         );
