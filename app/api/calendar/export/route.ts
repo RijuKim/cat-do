@@ -61,7 +61,7 @@ export async function POST(request: Request) {
     const tasks = google.tasks({version: 'v1', auth: oauth2Client});
 
     // 할일 생성
-    let notes = 'CAT DO에서 생성된 할일입니다.';
+    let notes = '캣두에서 생성된 할일입니다.';
 
     if (todo.advice) {
       if (todo.adviceCat) {

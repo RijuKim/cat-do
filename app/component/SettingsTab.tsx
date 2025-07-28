@@ -136,7 +136,7 @@ const SettingsTab: React.FC = () => {
             fetchStatus === 'loading'
               ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
               : session?.accessToken
-              ? 'bg-blue-500 text-white hover:bg-blue-600'
+              ? 'bg-green-400 text-white hover:bg-green-500'
               : 'bg-gray-300 text-gray-500 cursor-not-allowed'
           }`}>
           {fetchStatus === 'loading' ? (
@@ -160,7 +160,7 @@ const SettingsTab: React.FC = () => {
                 ? 'bg-green-50 text-green-800'
                 : fetchStatus === 'error'
                 ? 'bg-red-50 text-red-800'
-                : 'bg-blue-50 text-blue-800'
+                : 'bg-orange-50 text-orange-800'
             }`}>
             {fetchStatus === 'success' && <FaCheck className="flex-shrink-0" />}
             {fetchStatus === 'error' && (
@@ -176,8 +176,8 @@ const SettingsTab: React.FC = () => {
         {/* 도움말 */}
         <div className="mt-4 p-3 bg-gray-50 rounded-lg">
           <p className="text-xs text-gray-600">
-            💡 <strong>팁:</strong> 중복된 할일은 자동으로 건너뜁니다. 기존 CAT
-            DO 할일은 그대로 유지됩니다.
+            💡 <strong>팁:</strong> 중복된 할일은 자동으로 건너뜁니다. 기존
+            캣두의 할일은 그대로 유지됩니다.
           </p>
         </div>
       </div>
@@ -219,7 +219,7 @@ const SettingsTab: React.FC = () => {
             exportStatus === 'loading'
               ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
               : session?.accessToken
-              ? 'bg-green-500 text-white hover:bg-green-600'
+              ? 'bg-orange-400 text-white hover:bg-orange-500'
               : 'bg-gray-300 text-gray-500 cursor-not-allowed'
           }`}>
           {exportStatus === 'loading' ? (
@@ -243,7 +243,7 @@ const SettingsTab: React.FC = () => {
                 ? 'bg-green-50 text-green-800'
                 : exportStatus === 'error'
                 ? 'bg-red-50 text-red-800'
-                : 'bg-blue-50 text-blue-800'
+                : 'bg-orange-50 text-orange-800'
             }`}>
             {exportStatus === 'success' && (
               <FaCheck className="flex-shrink-0" />

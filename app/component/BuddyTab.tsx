@@ -116,7 +116,7 @@ const BuddyTab: React.FC<BuddyTabProps> = ({
                 className={`p-3 rounded-lg transition-all duration-200 text-center relative ${
                   isUnlocked
                     ? isSelected
-                      ? 'bg-orange-100 ring-2 ring-orange-300 shadow-md cursor-pointer'
+                      ? 'bg-orange-50 ring-2 ring-orange-200 shadow-md cursor-pointer'
                       : 'bg-gray-50 hover:bg-gray-100 hover:shadow-sm cursor-pointer'
                     : 'bg-gray-50 hover:bg-gray-100 cursor-pointer'
                 }`}>
@@ -148,7 +148,7 @@ const BuddyTab: React.FC<BuddyTabProps> = ({
                     {cat.personality}
                   </p>
                   {!isUnlocked && cat.cost > 0 && (
-                    <p className="text-xs text-pink-600 font-bold mt-1">
+                    <p className="text-xs text-orange-600 font-bold mt-1">
                       젤리 {cat.cost}개 필요
                     </p>
                   )}
@@ -171,26 +171,12 @@ const BuddyTab: React.FC<BuddyTabProps> = ({
           className={`w-full py-2 px-4 rounded-lg font-medium transition-colors ${
             tempSelectedCat === selectedCat
               ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-              : 'bg-orange-400 text-white hover:bg-orange-500'
+              : 'bg-orange-300 text-white hover:bg-orange-400'
           }`}>
           {tempSelectedCat === selectedCat
             ? '현재 선택됨'
             : `${tempSelectedCat} 선택하기`}
         </button>
-
-        {/* 젤리 정보 */}
-        <div className="mt-4 p-3 bg-gradient-to-r from-pink-50 to-purple-50 rounded-lg border border-pink-200">
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-700">보유 젤리</span>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-pink-400 rounded-full border border-pink-600"></div>
-              <span className="font-bold text-gray-800">{jellyCount}개</span>
-            </div>
-          </div>
-          <p className="text-xs text-gray-600 mt-1">
-            젤리 10개로 새로운 고양이를 입양할 수 있어요!
-          </p>
-        </div>
       </div>
 
       {/* 고양이 소개 섹션 */}
@@ -216,7 +202,7 @@ const BuddyTab: React.FC<BuddyTabProps> = ({
             </p>
           </div>
 
-          <div className="p-3 bg-blue-50 rounded-lg">
+          <div className="p-3 bg-green-50 rounded-lg">
             <div className="flex items-center gap-3 mb-2">
               <Image
                 src="/assets/coco.png"
@@ -225,9 +211,9 @@ const BuddyTab: React.FC<BuddyTabProps> = ({
                 height={32}
                 className="rounded-full"
               />
-              <h4 className="font-semibold text-blue-800">코코</h4>
+              <h4 className="font-semibold text-green-800">코코</h4>
             </div>
-            <p className="text-sm text-blue-700">
+            <p className="text-sm text-green-700">
               우아하고 느긋한 고양이예요. 고상하고 절제된 말투로 집사를
               격려해줍니다.
             </p>
@@ -260,7 +246,7 @@ const BuddyTab: React.FC<BuddyTabProps> = ({
 
       {/* 입양 확인 모달 */}
       {showAdoptModal && (
-        <div className="fixed inset-0 bg-white bg-opacity-80 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50 p-4">
           {/* 배경 클릭으로 모달 닫기 */}
           <div className="absolute inset-0" onClick={handleCloseModal}></div>
           <div className="bg-white rounded-2xl p-6 max-w-sm w-full mx-4 transform transition-all relative z-10">
@@ -278,15 +264,15 @@ const BuddyTab: React.FC<BuddyTabProps> = ({
                   </div>
 
                   {/* 젤리 개수 표시 */}
-                  <div className="bg-gradient-to-r from-pink-100 to-purple-100 rounded-lg p-4 border-2 border-pink-200">
+                  <div className="bg-gradient-to-r from-orange-100 to-yellow-100 rounded-lg p-4 border-2 border-orange-200">
                     <div className="flex items-center justify-center gap-2">
-                      <div className="w-6 h-6 bg-pink-400 rounded-full border-2 border-pink-600"></div>
+                      <div className="w-6 h-6 bg-orange-400 rounded-full border-2 border-orange-600"></div>
                       <span className="text-lg font-bold text-gray-800">
                         {jellyCount}개
                       </span>
                     </div>
                     <p className="text-xs text-gray-600 mt-1">보유 젤리</p>
-                    <p className="text-xs text-pink-600 font-bold mt-2">
+                    <p className="text-xs text-orange-600 font-bold mt-2">
                       필요 젤리: 10개
                     </p>
                   </div>
@@ -296,7 +282,7 @@ const BuddyTab: React.FC<BuddyTabProps> = ({
                     {[...Array(5)].map((_, i) => (
                       <FaHeart
                         key={i}
-                        className="text-pink-400 animate-pulse"
+                        className="text-orange-400 animate-pulse"
                         style={{
                           animationDelay: `${i * 0.2}s`,
                           animationDuration: '1s',
@@ -315,7 +301,7 @@ const BuddyTab: React.FC<BuddyTabProps> = ({
                     </button>
                     <button
                       onClick={handleAdoptConfirm}
-                      className="flex-1 bg-gradient-to-r from-pink-400 to-purple-400 text-white font-bold py-3 px-6 rounded-lg hover:from-pink-500 hover:to-purple-500 transition-all duration-200 transform hover:scale-105 shadow-lg">
+                      className="flex-1 bg-gradient-to-r from-orange-300 to-yellow-300 text-white font-bold py-3 px-6 rounded-lg hover:from-orange-400 hover:to-yellow-400 transition-all duration-200 transform hover:scale-105 shadow-lg">
                       네
                     </button>
                   </div>

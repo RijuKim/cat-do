@@ -15,7 +15,7 @@ export default function SplashScreen({
   onGoogleLogin,
 }: SplashScreenProps) {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-pink-50 to-purple-50 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-green-50 relative overflow-hidden">
       {/* 배경 장식 요소들 */}
       <div className="absolute inset-0 overflow-hidden">
         {/* 떠다니는 고양이 발자국들 */}
@@ -25,7 +25,7 @@ export default function SplashScreen({
           <FaPaw />
         </div>
         <div
-          className="absolute top-40 right-20 text-pink-200 text-3xl animate-bounce"
+          className="absolute top-40 right-20 text-orange-200 text-3xl animate-bounce"
           style={{animationDelay: '1s'}}>
           <FaPaw />
         </div>
@@ -42,7 +42,7 @@ export default function SplashScreen({
 
         {/* 떠다니는 하트들 */}
         <div
-          className="absolute top-60 left-1/4 text-pink-200 text-2xl animate-pulse"
+          className="absolute top-60 left-1/4 text-orange-200 text-2xl animate-pulse"
           style={{animationDelay: '0.3s'}}>
           <FaHeart />
         </div>
@@ -67,7 +67,7 @@ export default function SplashScreen({
               className="mx-auto rounded-full shadow-lg border-4 border-orange-200"
             />
             {/* 로고 주변 장식 */}
-            <div className="absolute -top-2 -right-2 text-pink-400 animate-pulse">
+            <div className="absolute -top-2 -right-2 text-orange-400 animate-pulse">
               <FaHeart size={24} />
             </div>
             <div
@@ -78,7 +78,7 @@ export default function SplashScreen({
           </div>
 
           {/* 타이틀 */}
-          <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-orange-400 via-pink-400 to-purple-400 bg-clip-text text-transparent">
+          <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-orange-300 via-yellow-300 to-green-300 bg-clip-text text-transparent">
             CAT DO
           </h1>
           <p className="text-lg text-gray-600 mb-2">
